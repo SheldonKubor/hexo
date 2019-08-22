@@ -3,12 +3,13 @@
 ## Source: https://github.com/hexojs/hexo/
 
 # Site
-title: SheldonKubor
+title: 猫屎咖啡
 subtitle:
 description:
 keywords:
-author: SheldonKubor
-language: en
+author: 猫屎咖啡
+#language: en
+language: zh-Hans
 timezone:
 
 # URL
