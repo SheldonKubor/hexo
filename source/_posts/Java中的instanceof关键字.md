@@ -1,7 +1,7 @@
 ---
 title: Java中的instanceof关键字
 date: 2019-08-27 15:56:57
-tags: [Java基础,instanceof]
+tags: [Java基础]
 ---
 
 
