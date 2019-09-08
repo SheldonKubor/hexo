@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="猫屎咖啡">
 <meta property="og:description" content="instanceof是Java的一个二元操作符，和==，&amp;gt;，&amp;lt;是同一类。由于它是由字母组成的，所以也是Java的保留关键字。它的作用是测试它左边的对象是否是它右边的类的实例，返回boolean类型的数据（true，false） 接下来让我们实际体验一下此关键字的作用 首先我们定义一个类Obj1（为了简单，我们就不在类中定义任何属性与方法了） 123class Obj1&amp;#123;&amp;#1">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:updated_time" content="2019-09-02T14:12:24.725Z">
+<meta property="og:updated_time" content="2019-09-08T08:49:41.638Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Java中的instanceof关键字">
 <meta name="twitter:description" content="instanceof是Java的一个二元操作符，和==，&amp;gt;，&amp;lt;是同一类。由于它是由字母组成的，所以也是Java的保留关键字。它的作用是测试它左边的对象是否是它右边的类的实例，返回boolean类型的数据（true，false） 接下来让我们实际体验一下此关键字的作用 首先我们定义一个类Obj1（为了简单，我们就不在类中定义任何属性与方法了） 123class Obj1&amp;#123;&amp;#1">
@@ -323,22 +323,22 @@
         <p>instanceof是Java的一个二元操作符，和==，&gt;，&lt;是同一类。由于它是由字母组成的，所以也是Java的保留关键字。它的作用是测试它左边的对象是否是它右边的类的实例，返回boolean类型的数据（true，false）</p>
 <p>接下来让我们实际体验一下此关键字的作用</p>
 <p>首先我们定义一个类Obj1（为了简单，我们就不在类中定义任何属性与方法了）</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">class Obj1&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Obj1</span></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>然后来测试一下instanceof</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj1 obj1 = new Obj1()</span><br><span class="line">System.out.println(obj1 instanceof Obj1);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj1 obj1 = <span class="keyword">new</span> Obj1()</span><br><span class="line">System.out.println(obj1 <span class="keyword">instanceof</span> Obj1);</span><br></pre></td></tr></table></figure>
 
 <p>输出结果为 <code>true</code></p>
 <p>若类存在继承关系呢？，我们来试一下</p>
 <p>首先，定义Obj2，并使其继承Obj1</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">class Obj2 extends Obj1&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Obj2</span> <span class="keyword">extends</span> <span class="title">Obj1</span></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>然后，测试一下instanceof</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj2 obj2 = new Obj2();</span><br><span class="line">System.out.println(obj2 instanceof Obj1);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj2 obj2 = <span class="keyword">new</span> Obj2();</span><br><span class="line">System.out.println(obj2 <span class="keyword">instanceof</span> Obj1);</span><br></pre></td></tr></table></figure>
 
 <p>输出结果为 <code>true</code><br>可以看到，由于Obj2继承了Obj1，所以obj2也是Obj1的实例</p>
 <p>那反过来呢？</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj1 obj1 = new Obj1();</span><br><span class="line">System.out.println(obj1 instanceof Obj2);</span><br></pre></td></tr></table></figure>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj1 obj1 = <span class="keyword">new</span> Obj1();</span><br><span class="line">System.out.println(obj1 <span class="keyword">instanceof</span> Obj2);</span><br></pre></td></tr></table></figure>
 
 <p>可以看到输出结果为 <code>false</code></p>
 <p>若是某一个类有接口的继承关系，与上面类的继承关系也一样，大家可以自己试一试。</p>
@@ -448,7 +448,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>

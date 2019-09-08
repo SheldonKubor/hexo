@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="Hexo, NexT">
+  <meta name="keywords" content="算法,">
 
 
 
@@ -79,13 +79,18 @@
 
 
 
-<meta property="og:type" content="website">
-<meta property="og:title" content="猫屎咖啡">
-<meta property="og:url" content="http://yoursite.com/index.html">
+<meta name="description" content="在上一篇讲二分查找的文章中我们提到了实现二分查找的一种方式，那就是使用递归算法。 123456789101112131415161718//递归public static int recursionBinarySearch(int[] arr,int key,int low,int high)&amp;#123;                if(key &amp;lt; arr[low] || key &amp;gt">
+<meta name="keywords" content="算法">
+<meta property="og:type" content="article">
+<meta property="og:title" content="递归算法及应用">
+<meta property="og:url" content="http://yoursite.com/2019/09/08/递归算法及应用/index.html">
 <meta property="og:site_name" content="猫屎咖啡">
+<meta property="og:description" content="在上一篇讲二分查找的文章中我们提到了实现二分查找的一种方式，那就是使用递归算法。 123456789101112131415161718//递归public static int recursionBinarySearch(int[] arr,int key,int low,int high)&amp;#123;                if(key &amp;lt; arr[low] || key &amp;gt">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:updated_time" content="2019-09-08T08:48:38.426Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="猫屎咖啡">
+<meta name="twitter:title" content="递归算法及应用">
+<meta name="twitter:description" content="在上一篇讲二分查找的文章中我们提到了实现二分查找的一种方式，那就是使用递归算法。 123456789101112131415161718//递归public static int recursionBinarySearch(int[] arr,int key,int low,int high)&amp;#123;                if(key &amp;lt; arr[low] || key &amp;gt">
 
 
 
@@ -115,13 +120,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/">
+  <link rel="canonical" href="http://yoursite.com/2019/09/08/递归算法及应用/">
 
 
 
 
 
-  <title>猫屎咖啡</title>
+  <title>递归算法及应用 | 猫屎咖啡</title>
   
 
 
@@ -140,8 +145,7 @@
     
   
 
-  <div class="container sidebar-position-left 
-  page-home">
+  <div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -234,9 +238,9 @@
         <div class="content-wrap">
           <div id="content" class="content">
             
-  <section id="posts" class="posts-expand">
+
+  <div id="posts" class="posts-expand">
     
-      
 
   
 
@@ -266,9 +270,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/09/08/递归算法及应用/" itemprop="url">递归算法及应用</a></h1>
+          <h1 class="post-title" itemprop="name headline">递归算法及应用</h1>
         
 
         <div class="post-meta">
@@ -318,9 +320,7 @@
       
 
       
-        
-          
-            <p>在上一篇讲二分查找的文章中我们提到了实现二分查找的一种方式，那就是使用递归算法。</p>
+        <p>在上一篇讲二分查找的文章中我们提到了实现二分查找的一种方式，那就是使用递归算法。</p>
 <figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//递归</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">recursionBinarySearch</span><span class="params">(<span class="keyword">int</span>[] arr,<span class="keyword">int</span> key,<span class="keyword">int</span> low,<span class="keyword">int</span> high)</span></span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(key &lt; arr[low] || key &gt; arr[high] || low &gt; high)&#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;              </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> middle = (low + high) / <span class="number">2</span>;          <span class="comment">//初始中间位置</span></span><br><span class="line">        <span class="keyword">if</span>(arr[middle] &gt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字大则关键字在左区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,low,middle-<span class="number">1</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字小则关键字在右区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,middle+<span class="number">1</span>,high);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> middle;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
 
 <p>根据二分查找的原理，当我们取得中间值<code>arr[middle]</code>大于想要查找的目标值<code>key</code>的时候，我们需要排除比<code>key</code>大的那一半数据，也就是<code>arr[middle]</code>之后的数据。在代码中我们可以看到，我们通过将<code>high</code>参数设置为<code>middle-1</code>来排除<code>middle</code>之后的数据。同时我们将<code>middle-1</code>当做新的<code>high</code>传入到函数中继续调用。也就是这个函数自己又继续调用了自己本身，只是改变了参数，将问题分解为原来的一半。然后在此函数中继续上面的步骤，改变参数<code>low</code>或者<code>high</code>，将<code>low</code>或者<code>high</code>的新值作为参数继续传给自己并调用自己，这就是递归。</p>
@@ -351,8 +351,6 @@
 <p>递归是一种非常优雅的问题解决方法（在不考虑程序性能的前提下），递归将人分为截然不同的阵营：恨它的、爱它的以及恨了几年后又爱上它的。</p>
 <p>最后分享一句话，Leigh Caldwell在Stack Overflow上说：“如果使用循环，程序的性能可能更高；如果使用递归，程序可能更容易理解。如何选择要看什么对你来说更重要。”</p>
 
-          
-        
       
     </div>
     
@@ -367,291 +365,36 @@
 
     <footer class="post-footer">
       
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/31/二分查找及其Java代码实现/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="猫屎咖啡">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="猫屎咖啡">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/31/二分查找及其Java代码实现/" itemprop="url">二分查找及其Java代码实现</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-31T14:38:11+08:00">
-                2019-08-31
-              </time>
-            
-
-            
-
-            
-          </span>
-
+        <div class="post-tags">
           
-
+            <a href="/tags/算法/" rel="tag"># 算法</a>
           
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>假设我们在词典中查找一个k开头的单词，我们会怎么做呢？</p>
-<ol>
-<li>从词典第一页开始一页一页的翻页，然后直到翻到k开头的单词。</li>
-<li>直接翻页到词典大概中间的位置，然后根据词典a-z排列规律，判断翻到的页在k之前，还是之后，然后继续翻页。</li>
-</ol>
-<p>其实这就是一个查找问题，上面第二种方法就是 <code>二分查找</code></p>
-<p>我们再举一个例子：<br>我自己随便想一个 <code>1-100</code> 之间的数字，然后让你来猜，你每次猜测之后我都会告诉你，猜大了还是猜小了。（假设我心中想的数字是60）</p>
-<ol>
-<li>第一种方式：假设你从 <code>1</code> 开始依次往上猜，要猜到 <code>60</code> 你得猜60次才能猜到。这种方式就是 <code>简单查找</code>。（当然聪明如你肯定不会以这种方式来猜）</li>
-<li>第二种方式：从 <code>50</code> 开始，小了，排除<code>1-50</code>，排除了一半数字；接下来你猜 <code>75</code>，大了，又排除了一半数字<code>75-100</code>；接下来你猜 <code>63</code>，大了；依次类推，你每次猜测的都是中间的数字，从而每次都将余下的数字排除一半，无论我心中的所想的数字是几，你在7步之内就能猜到。（大家想想为什么是7次？给个提示，2的6次方是64,2的7次方是128。）</li>
-</ol>
-<p>上述第二种方式就是 <code>二分查找</code> 。</p>
-<p>一般而言，对于包含n个元素的列表，用二分查找最多需要 <code>logn</code> 步（log以2为底），用简单查找最多需要 <code>n</code> 步</p>
-<p>接下来我们看看如何编写二分查找的Java代码，有两种方式，一种是利用循环，另一种是利用递归（递归是什么此篇文章就不展开讲了，之后再讲。）</p>
-<p>另外需要注意的是，二分查找只能应用在排好顺序的数组或列表上。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* BinSearch</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BinSearch</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] arr = &#123;<span class="number">1</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">16</span>,<span class="number">45</span>,<span class="number">48</span>,<span class="number">78</span>&#125;;</span><br><span class="line">        <span class="keyword">int</span> index = recursionBinarySearch(arr,<span class="number">48</span>,<span class="number">0</span>,arr.length-<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">int</span> index2 = commonBinarySearch(arr,<span class="number">48</span>);</span><br><span class="line">        System.out.println(index);</span><br><span class="line">        System.out.println(index2);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//递归</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">recursionBinarySearch</span><span class="params">(<span class="keyword">int</span>[] arr,<span class="keyword">int</span> key,<span class="keyword">int</span> low,<span class="keyword">int</span> high)</span></span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(key &lt; arr[low] || key &gt; arr[high] || low &gt; high)&#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;              </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> middle = (low + high) / <span class="number">2</span>;          <span class="comment">//初始中间位置</span></span><br><span class="line">        <span class="keyword">if</span>(arr[middle] &gt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字大则关键字在左区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,low,middle-<span class="number">1</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字小则关键字在右区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,middle+<span class="number">1</span>,high);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> middle;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//循环</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">commonBinarySearch</span><span class="params">(<span class="keyword">int</span>[] arr,<span class="keyword">int</span> key)</span></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> low = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> high = arr.length - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">int</span> middle = <span class="number">0</span>;         <span class="comment">//定义middle</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(key &lt; arr[low] || key &gt; arr[high] || low &gt; high)&#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;              </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span>(low &lt;= high)&#123;</span><br><span class="line">            middle = (low + high) / <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">if</span>(arr[middle] &gt; key)&#123;</span><br><span class="line">                <span class="comment">//比关键字大则关键字在左区域</span></span><br><span class="line">                high = middle - <span class="number">1</span>;</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;</span><br><span class="line">                <span class="comment">//比关键字小则关键字在右区域</span></span><br><span class="line">                low = middle + <span class="number">1</span>;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                <span class="keyword">return</span> middle;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;      <span class="comment">//最后仍然没有找到，则返回-1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
       
 
       
       
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
       
 
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/27/Java中的instanceof关键字/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="猫屎咖啡">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="猫屎咖啡">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/27/Java中的instanceof关键字/" itemprop="url">Java中的instanceof关键字</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
             
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-27T15:56:57+08:00">
-                2019-08-27
-              </time>
+              <a href="/2019/08/31/二分查找及其Java代码实现/" rel="next" title="二分查找及其Java代码实现">
+                <i class="fa fa-chevron-left"></i> 二分查找及其Java代码实现
+              </a>
             
+          </div>
 
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
             
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
+          </div>
         </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
       
 
       
-        
-          
-            <p>instanceof是Java的一个二元操作符，和==，&gt;，&lt;是同一类。由于它是由字母组成的，所以也是Java的保留关键字。它的作用是测试它左边的对象是否是它右边的类的实例，返回boolean类型的数据（true，false）</p>
-<p>接下来让我们实际体验一下此关键字的作用</p>
-<p>首先我们定义一个类Obj1（为了简单，我们就不在类中定义任何属性与方法了）</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Obj1</span></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>然后来测试一下instanceof</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj1 obj1 = <span class="keyword">new</span> Obj1()</span><br><span class="line">System.out.println(obj1 <span class="keyword">instanceof</span> Obj1);</span><br></pre></td></tr></table></figure>
-
-<p>输出结果为 <code>true</code></p>
-<p>若类存在继承关系呢？，我们来试一下</p>
-<p>首先，定义Obj2，并使其继承Obj1</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">Obj2</span> <span class="keyword">extends</span> <span class="title">Obj1</span></span>&#123;</span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>然后，测试一下instanceof</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj2 obj2 = <span class="keyword">new</span> Obj2();</span><br><span class="line">System.out.println(obj2 <span class="keyword">instanceof</span> Obj1);</span><br></pre></td></tr></table></figure>
-
-<p>输出结果为 <code>true</code><br>可以看到，由于Obj2继承了Obj1，所以obj2也是Obj1的实例</p>
-<p>那反过来呢？</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">Obj1 obj1 = <span class="keyword">new</span> Obj1();</span><br><span class="line">System.out.println(obj1 <span class="keyword">instanceof</span> Obj2);</span><br></pre></td></tr></table></figure>
-
-<p>可以看到输出结果为 <code>false</code></p>
-<p>若是某一个类有接口的继承关系，与上面类的继承关系也一样，大家可以自己试一试。</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
       
     </footer>
   </div>
@@ -661,10 +404,11 @@
   </article>
 
 
-    
-  </section>
 
-  
+    <div class="post-spread">
+      
+    </div>
+  </div>
 
 
           </div>
@@ -672,6 +416,10 @@
 
 
           
+
+  
+
+
 
         </div>
         
@@ -900,6 +648,10 @@
 
 
   
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
 
   
 

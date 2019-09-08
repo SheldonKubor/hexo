@@ -10,14 +10,14 @@ instanceof是Java的一个二元操作符，和==，>，<是同一类。由于�
 接下来让我们实际体验一下此关键字的作用
 
 首先我们定义一个类Obj1（为了简单，我们就不在类中定义任何属性与方法了）
-```
+```java
 class Obj1{
 
 }
 ```
 然后来测试一下instanceof
 
-```
+```java
 Obj1 obj1 = new Obj1()
 System.out.println(obj1 instanceof Obj1);
 ```
@@ -27,13 +27,13 @@ System.out.println(obj1 instanceof Obj1);
 
 首先，定义Obj2，并使其继承Obj1
 
-```
+```java
 class Obj2 extends Obj1{
 
 }
 ```
 然后，测试一下instanceof
-```
+```java
 Obj2 obj2 = new Obj2();
 System.out.println(obj2 instanceof Obj1);
 
@@ -44,7 +44,7 @@ System.out.println(obj2 instanceof Obj1);
 
 那反过来呢？
 
-```
+```java
 Obj1 obj1 = new Obj1();
 System.out.println(obj1 instanceof Obj2);
 ```
