@@ -91,13 +91,13 @@
 <meta property="og:site_name" content="猫屎咖啡">
 <meta property="og:description" content="前段时间学习Redis，在网上一搜Redis教程，绝大部分的教程都是在教你怎么使用Redis，比如如何set/get一个字符串，Redis列表怎么添加（获取）值等基础用法，这些就相当于我们学习一门计算机语言的语法过程。简单浏览一遍就好了，用到的时候不记得了再去查。（当然你如果记忆力强悍，全部记住也是极好的，省去了查百度的时间，提高了效率）。这些基础的语法知识，个人感觉没有什么含金量，熟悉编程的人几">
 <meta property="og:locale" content="zh-Hans">
-<meta property="og:image" content="https://github.com/SheldonKubor/hexo/blob/master/source/_posts/pic_doc/redis_sds.jpeg">
-<meta property="og:image" content="https://github.com/SheldonKubor/hexo/blob/master/source/_posts/pic_doc/redis_c_string.jpeg">
-<meta property="og:updated_time" content="2019-10-27T10:37:53.237Z">
+<meta property="og:image" content="http://yoursite.com/pic_doc/redis_sds.jpeg">
+<meta property="og:image" content="http://yoursite.com/pic_doc/redis_c_string.jpeg">
+<meta property="og:updated_time" content="2019-10-27T10:43:00.680Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Redis中的数据结构之简单动态字符串">
 <meta name="twitter:description" content="前段时间学习Redis，在网上一搜Redis教程，绝大部分的教程都是在教你怎么使用Redis，比如如何set/get一个字符串，Redis列表怎么添加（获取）值等基础用法，这些就相当于我们学习一门计算机语言的语法过程。简单浏览一遍就好了，用到的时候不记得了再去查。（当然你如果记忆力强悍，全部记住也是极好的，省去了查百度的时间，提高了效率）。这些基础的语法知识，个人感觉没有什么含金量，熟悉编程的人几">
-<meta name="twitter:image" content="https://github.com/SheldonKubor/hexo/blob/master/source/_posts/pic_doc/redis_sds.jpeg">
+<meta name="twitter:image" content="http://yoursite.com/pic_doc/redis_sds.jpeg">
 
 
 
@@ -355,7 +355,7 @@
 
 </li>
 </ul>
-<p>比如我们定义一个字符串“Redis”，在SDS中会怎么存储呢？<br><img src="https://github.com/SheldonKubor/hexo/blob/master/source/_posts/pic_doc/redis_sds.jpeg" alt> </p>
+<p>比如我们定义一个字符串“Redis”，在SDS中会怎么存储呢？<br><img src="/pic_doc/redis_sds.jpeg" alt> </p>
 <ol>
 <li>free属性的值为0，表示这个SDS没有分配任何未使用空间。</li>
 <li>len属性值为5，表示这个SDS保存了一个长度为5的字符串</li>
@@ -364,7 +364,7 @@
 <p>学过c语言的都知道，c语言中字符串的结尾惯例就是一个空字符 <code>\0</code>，Redis是用c语言编写的，所以遵循c语言字符串结尾的规范。大家可以看到结尾的空字符<code>\0</code>虽然占用了一个字符的空间，但不计算在SDS的len属性里面，所以这个空字符串对于SDS的使用者是完全透明的，这样的好处是SDS可以直接重用一部分c语言字符串库中的函数。比如 <code>&lt;stdio.h&gt;/printf</code>函数。</p>
 <p>说完SDS的数据结构，大家肯定知道了SDS中的<code>len</code>与<code>buf[]</code>属性的含义，但可能不知道<code>free</code>是用来做什么的，我们暂时不讨论这个，下一篇再详细说明。</p>
 <p>既然Redis是用c语言编写的，那么保存字符串的时候为什么不用c语言中的表示方式呢？为何还要定义一个SDS呢？</p>
-<p>我们先来看一下”Redis”这个字符串在c语言中的表示<br><img src="https://github.com/SheldonKubor/hexo/blob/master/source/_posts/pic_doc/redis_c_string.jpeg" alt></p>
+<p>我们先来看一下”Redis”这个字符串在c语言中的表示<br><img src="/pic_doc/redis_c_string.jpeg" alt></p>
 <p>可以看到，c语言使用的这种简单的字符串表示方式，没有记录字符串自身的长度信息，也就是没有SDS中的<code>len</code>属性。想一下若是在c语言中获取这个字符串的长度该怎么获取呢？</p>
 <p>只有一种方法，那就是循环遍历整个字符串，对遇到的每个字符进行计数，直到遇到代表字符串结尾的空字符<code>\0</code>为止。这个操作的时间复杂度为<code>O(n)</code>，虽然这个复杂度看起来并不是很高，但是还是满足不了Redis在效率性方面的要求（众所周知，Redis的应用场景大部分都会面临海量的并发，对其性能要求很高）。</p>
 <p>那么SDS在获取字符串长度时候的时间复杂度是多少呢？因为SDS在len属性中记录了SDS本身字符串的长度，所以获取字符串长度只需要访问SDS的len属性，所以时间复杂度为<code>O(1)</code>。</p>

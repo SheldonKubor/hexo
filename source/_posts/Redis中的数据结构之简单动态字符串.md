@@ -45,7 +45,7 @@ struct sdshdr {
 ```
 
 比如我们定义一个字符串“Redis”，在SDS中会怎么存储呢？
-![](https://github.com/SheldonKubor/hexo/blob/master/source/_posts/pic_doc/redis_sds.jpeg) 
+![](/pic_doc/redis_sds.jpeg) 
 
 
 1. free属性的值为0，表示这个SDS没有分配任何未使用空间。
@@ -59,7 +59,7 @@ struct sdshdr {
 既然Redis是用c语言编写的，那么保存字符串的时候为什么不用c语言中的表示方式呢？为何还要定义一个SDS呢？
 
 我们先来看一下"Redis"这个字符串在c语言中的表示
-![](https://github.com/SheldonKubor/hexo/blob/master/source/_posts/pic_doc/redis_c_string.jpeg)
+![](/pic_doc/redis_c_string.jpeg)
 
 可以看到，c语言使用的这种简单的字符串表示方式，没有记录字符串自身的长度信息，也就是没有SDS中的`len`属性。想一下若是在c语言中获取这个字符串的长度该怎么获取呢？
 
