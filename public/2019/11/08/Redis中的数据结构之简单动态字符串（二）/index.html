@@ -83,21 +83,23 @@
 
 
 
-<meta name="description" content="前段时间学习Redis，在网上一搜Redis教程，绝大部分的教程都是在教你怎么使用Redis，比如如何set/get一个字符串，Redis列表怎么添加（获取）值等基础用法，这些就相当于我们学习一门计算机语言的语法过程。简单浏览一遍就好了，用到的时候不记得了再去查。（当然你如果记忆力强悍，全部记住也是极好的，省去了查百度的时间，提高了效率）。这些基础的语法知识，个人感觉没有什么含金量，熟悉编程的人几">
+<meta name="description" content="上一篇我们讲到了Redis中简单动态字符串与c语言中字符串相比的一个优势，也就是获取字符串长度时的时间复杂度有了大幅度降低，满足了Redis在效率方面的要求。 今天来说一下，SDS是如何满足Redis对字符串在安全性方面的要求。 除了获取字符串长度的复杂度高之外，C语言中字符串不记录自身长度带来的另一个问题是容易造成缓冲区溢出（buffer overflow），例如&amp;lt;string.h&amp;gt;">
 <meta name="keywords" content="Redis,数据结构">
 <meta property="og:type" content="article">
-<meta property="og:title" content="Redis中的数据结构之简单动态字符串">
-<meta property="og:url" content="http://yoursite.com/2019/10/23/Redis中的数据结构之简单动态字符串/index.html">
+<meta property="og:title" content="Redis中的数据结构之简单动态字符串（二）">
+<meta property="og:url" content="http://yoursite.com/2019/11/08/Redis中的数据结构之简单动态字符串（二）/index.html">
 <meta property="og:site_name" content="猫屎咖啡">
-<meta property="og:description" content="前段时间学习Redis，在网上一搜Redis教程，绝大部分的教程都是在教你怎么使用Redis，比如如何set/get一个字符串，Redis列表怎么添加（获取）值等基础用法，这些就相当于我们学习一门计算机语言的语法过程。简单浏览一遍就好了，用到的时候不记得了再去查。（当然你如果记忆力强悍，全部记住也是极好的，省去了查百度的时间，提高了效率）。这些基础的语法知识，个人感觉没有什么含金量，熟悉编程的人几">
+<meta property="og:description" content="上一篇我们讲到了Redis中简单动态字符串与c语言中字符串相比的一个优势，也就是获取字符串长度时的时间复杂度有了大幅度降低，满足了Redis在效率方面的要求。 今天来说一下，SDS是如何满足Redis对字符串在安全性方面的要求。 除了获取字符串长度的复杂度高之外，C语言中字符串不记录自身长度带来的另一个问题是容易造成缓冲区溢出（buffer overflow），例如&amp;lt;string.h&amp;gt;">
 <meta property="og:locale" content="zh-Hans">
+<meta property="og:image" content="http://yoursite.com/pic_doc/c_string_s1&s2.jpeg">
+<meta property="og:image" content="http://yoursite.com/pic_doc/c_string_s1&s2_buf_overflow.jpeg">
 <meta property="og:image" content="http://yoursite.com/pic_doc/redis_sds.jpeg">
-<meta property="og:image" content="http://yoursite.com/pic_doc/redis_c_string.jpeg">
-<meta property="og:updated_time" content="2019-10-27T10:43:00.680Z">
+<meta property="og:image" content="http://yoursite.com/pic_doc/sds_after_sdscat.jpeg">
+<meta property="og:updated_time" content="2019-11-08T13:31:45.969Z">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="Redis中的数据结构之简单动态字符串">
-<meta name="twitter:description" content="前段时间学习Redis，在网上一搜Redis教程，绝大部分的教程都是在教你怎么使用Redis，比如如何set/get一个字符串，Redis列表怎么添加（获取）值等基础用法，这些就相当于我们学习一门计算机语言的语法过程。简单浏览一遍就好了，用到的时候不记得了再去查。（当然你如果记忆力强悍，全部记住也是极好的，省去了查百度的时间，提高了效率）。这些基础的语法知识，个人感觉没有什么含金量，熟悉编程的人几">
-<meta name="twitter:image" content="http://yoursite.com/pic_doc/redis_sds.jpeg">
+<meta name="twitter:title" content="Redis中的数据结构之简单动态字符串（二）">
+<meta name="twitter:description" content="上一篇我们讲到了Redis中简单动态字符串与c语言中字符串相比的一个优势，也就是获取字符串长度时的时间复杂度有了大幅度降低，满足了Redis在效率方面的要求。 今天来说一下，SDS是如何满足Redis对字符串在安全性方面的要求。 除了获取字符串长度的复杂度高之外，C语言中字符串不记录自身长度带来的另一个问题是容易造成缓冲区溢出（buffer overflow），例如&amp;lt;string.h&amp;gt;">
+<meta name="twitter:image" content="http://yoursite.com/pic_doc/c_string_s1&s2.jpeg">
 
 
 
@@ -127,13 +129,13 @@
 
 
 
-  <link rel="canonical" href="http://yoursite.com/2019/10/23/Redis中的数据结构之简单动态字符串/">
+  <link rel="canonical" href="http://yoursite.com/2019/11/08/Redis中的数据结构之简单动态字符串（二）/">
 
 
 
 
 
-  <title>Redis中的数据结构之简单动态字符串 | 猫屎咖啡</title>
+  <title>Redis中的数据结构之简单动态字符串（二） | 猫屎咖啡</title>
   
 
 
@@ -260,7 +262,7 @@
   
   
   <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/23/Redis中的数据结构之简单动态字符串/">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/08/Redis中的数据结构之简单动态字符串（二）/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
       <meta itemprop="name" content="猫屎咖啡">
@@ -277,7 +279,7 @@
 
         
         
-          <h1 class="post-title" itemprop="name headline">Redis中的数据结构之简单动态字符串</h1>
+          <h1 class="post-title" itemprop="name headline">Redis中的数据结构之简单动态字符串（二）</h1>
         
 
         <div class="post-meta">
@@ -289,8 +291,8 @@
               
                 <span class="post-meta-item-text">发表于</span>
               
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-10-23T20:57:21+08:00">
-                2019-10-23
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-08T20:10:42+08:00">
+                2019-11-08
               </time>
             
 
@@ -327,49 +329,28 @@
       
 
       
-        <p>前段时间学习Redis，在网上一搜Redis教程，绝大部分的教程都是在教你怎么使用Redis，比如如何set/get一个字符串，Redis列表怎么添加（获取）值等基础用法，这些就相当于我们学习一门计算机语言的语法过程。简单浏览一遍就好了，用到的时候不记得了再去查。（当然你如果记忆力强悍，全部记住也是极好的，省去了查百度的时间，提高了效率）。这些基础的语法知识，个人感觉没有什么含金量，熟悉编程的人几乎大部分人一看就懂。</p>
-<p>所以，我们要学习里面涉及到的原理知识，素闻Redis中的数据结构异常牛B，我呢就找了一本书《Redis设计与实现》来学习，在此也记录一下，加深一下印象，也分享一下学习笔记。</p>
-<p>首先我们来学习Redis中最简单的数据结构 <code>SDS</code>，也就是 <code>simple dynamic string</code>，翻译过来就是 <code>简单动态字符串</code>。正如其名字所说的，这种数据结构是一个简单的，动态的(可以被修改值)的字符串。</p>
-<p>当Redis需要的不仅仅是一个字符串字面量，而是需要一个可以被修改的字符串的时候，Redis就会使用SDS来表示字符串的值。比如在Redis中，包含字符串值的键值对在底层都是由SDS实现的。</p>
-<p>举个例子，在Redis客户端执行如下命令：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">redis&gt;</span> set msg "hello word"</span><br><span class="line">OK</span><br></pre></td></tr></table></figure>
+        <p>上一篇我们讲到了Redis中简单动态字符串与c语言中字符串相比的一个优势，也就是获取字符串长度时的时间复杂度有了大幅度降低，满足了Redis在效率方面的要求。</p>
+<p>今天来说一下，SDS是如何满足Redis对字符串在安全性方面的要求。</p>
+<p>除了获取字符串长度的复杂度高之外，C语言中字符串不记录自身长度带来的另一个问题是容易造成缓冲区溢出（buffer overflow），例如<code>&lt;string.h&gt;/strcat</code>函数可以将<code>src</code>字符串中的内容拼接到<code>dest</code>字符串末尾。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">char</span>* <span class="title">strcat</span><span class="params">(<span class="keyword">char</span>* dest,<span class="keyword">const</span> <span class="keyword">char</span>* src)</span></span></span><br></pre></td></tr></table></figure>
 
-<p>这个命令大家都很熟悉，这在Redis中创建了一个新的键值对，键为<code>msg</code>，值就是我们最熟悉的<code>hello world</code>。其中，<code>msg</code>是一个字符串，<code>hello world</code>也是一个字符串。上面说了，包含字符串值的键值对在底层都是由SDS实现的。<br>所以</p>
-<ul>
-<li>键值对的键 <code>msg</code>是一个字符串对象，底层的实现是一个保存着字符串<code>msg</code>的SDS</li>
-<li>键值对的值 <code>hello world</code>也是一个字符串对象，底层的实现是一个保存着字符串<code>hello world</code>的SDS</li>
-</ul>
-<p>再举个例子：</p>
-<figure class="highlight shell"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="meta">redis&gt;</span> rpush fruits "apple" "banana" "cherry"</span><br></pre></td></tr></table></figure>
+<p>举个例子，假如一段程序，在内存中有两个紧紧相邻的c语言字符串<code>s1</code>和<code>s2</code>与<code>Redis</code>,<code>MongoDB</code>，如图所示</p>
+<p><img src="/pic_doc/c_string_s1&s2.jpeg" alt="在内存中紧邻的两个C字符串"> </p>
+<p>如果一个程序员决定通过使用<code>strcat</code>函数来修改<code>s1</code>的内容为<code>Redis Cluster</code></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">strcat</span>(s1, <span class="string">"Cluster"</span>);</span><br></pre></td></tr></table></figure>
 
-<p>这个命令大家也知道，在Redis中创建了一个列表，其实也是一个键值对，键为<code>fruits</code>，值为<code>&quot;apple&quot; &quot;banana&quot; &quot;cherry&quot;</code>，其中：</p>
-<ul>
-<li>键值对的键 <code>fruits</code>是一个字符串对象，底层的实现是一个保存着字符串<code>fruits</code>的SDS</li>
-<li>键值对的值 <code>&quot;apple&quot; &quot;banana&quot; &quot;cherry&quot;</code>是一个列表对象，其中包含了三个字符串对象，这三个字符串对象分别由三个SDS实现：第一个SDS保存着”apple”，第二个SDS保存着”banana”，第三个SDS保存着”cherry”</li>
-</ul>
-<p>除了用来保存Redis中的字符串值之外，SDS还被用作缓冲区，这个以后我们再说。</p>
-<p>说了一些SDS在Redis中的应用，那么，SDS的数据结构到底是什么样子呢？</p>
-<p>我们来看一下SDS的数据结构定义代码：</p>
-<ul>
-<li>注：此书基于的Redis版本不是最新的，最新的版本中，SDS的数据结构做了一些优化，但是大同小异，大家有兴趣可以去github看Redis最新的源码。<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="class"><span class="keyword">struct</span> <span class="title">sdshdr</span> &#123;</span></span><br><span class="line">    <span class="keyword">int</span> len; <span class="comment">//记录buf数组中已使用的字节数量，等于SDS所保存的字符串长度</span></span><br><span class="line">    <span class="keyword">int</span> <span class="built_in">free</span>; <span class="comment">//记录buf数组中未使用的字节数量</span></span><br><span class="line">    <span class="keyword">char</span> buf[]; <span class="comment">//字节数组，用来保存字符串的值</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>但他忘了在执行<code>strcat</code>之前为<code>s1</code>分配足够的空间（众所周知，在c语言与c++中需要程序员自己手工对内存进行管理），那么就会导致<code>Cluster</code>溢出到<code>s2</code>的位置，如下图：</p>
+<p><img src="/pic_doc/c_string_s1&s2_buf_overflow.jpeg" alt="s2被溢出的内容覆盖"> </p>
+<p>而在SDS中，通过一个巧妙的方法避免了这种情况的发生，也就是利用SDS结构体中的<code>free</code>属性(在最新版的Redis中，SDS的结构体中已经移除了free属性，转而使用alloc来代替，不过两个属性的含义有所不同，但在SDS中起到的作用基本一致，这个有机会再说哈)。那么SDS是怎么使用<code>free</code>属性来杜绝缓冲区溢出的呢？</p>
+<p>举个例子：SDS的API中也有一个用于执行拼接操作的<code>sdscat</code>函数，类似于c语言中的<code>strcat</code>，当SDS中<code>sdscat</code>需要拼接字符串的时候，会先检查SDS的空间是否满足所需的要求，如果不满足的话，Redis会自动将SDS的空间扩展到所需大小，然后再执行拼接操作，所以使用SDS既不必像c语言中手动修改空间大小，也不会出现前面所说的c语言中字符串的缓冲区问题。（<code>注：这里只是举了一个拼接字符串的例子，其他的有关SDS的API在修改SDS的时候也会做上面的操作</code>）</p>
+<p>例如有以下SDS：</p>
+<p><img src="/pic_doc/redis_sds.jpeg" alt="执行sdscat之前"></p>
+<p>我们执行：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdscat(s,<span class="string">"Cluster"</span>);</span><br></pre></td></tr></table></figure>
 
-</li>
-</ul>
-<p>比如我们定义一个字符串“Redis”，在SDS中会怎么存储呢？<br><img src="/pic_doc/redis_sds.jpeg" alt> </p>
-<ol>
-<li>free属性的值为0，表示这个SDS没有分配任何未使用空间。</li>
-<li>len属性值为5，表示这个SDS保存了一个长度为5的字符串</li>
-<li>buf属性是一个char类型的数组，数组的前五个元素分别保存了 ‘R’,’e’,’d’,’i’,’s’ 五个字符，而最后一个元素则保存了空字符’\0’。</li>
-</ol>
-<p>学过c语言的都知道，c语言中字符串的结尾惯例就是一个空字符 <code>\0</code>，Redis是用c语言编写的，所以遵循c语言字符串结尾的规范。大家可以看到结尾的空字符<code>\0</code>虽然占用了一个字符的空间，但不计算在SDS的len属性里面，所以这个空字符串对于SDS的使用者是完全透明的，这样的好处是SDS可以直接重用一部分c语言字符串库中的函数。比如 <code>&lt;stdio.h&gt;/printf</code>函数。</p>
-<p>说完SDS的数据结构，大家肯定知道了SDS中的<code>len</code>与<code>buf[]</code>属性的含义，但可能不知道<code>free</code>是用来做什么的，我们暂时不讨论这个，下一篇再详细说明。</p>
-<p>既然Redis是用c语言编写的，那么保存字符串的时候为什么不用c语言中的表示方式呢？为何还要定义一个SDS呢？</p>
-<p>我们先来看一下”Redis”这个字符串在c语言中的表示<br><img src="/pic_doc/redis_c_string.jpeg" alt></p>
-<p>可以看到，c语言使用的这种简单的字符串表示方式，没有记录字符串自身的长度信息，也就是没有SDS中的<code>len</code>属性。想一下若是在c语言中获取这个字符串的长度该怎么获取呢？</p>
-<p>只有一种方法，那就是循环遍历整个字符串，对遇到的每个字符进行计数，直到遇到代表字符串结尾的空字符<code>\0</code>为止。这个操作的时间复杂度为<code>O(n)</code>，虽然这个复杂度看起来并不是很高，但是还是满足不了Redis在效率性方面的要求（众所周知，Redis的应用场景大部分都会面临海量的并发，对其性能要求很高）。</p>
-<p>那么SDS在获取字符串长度时候的时间复杂度是多少呢？因为SDS在len属性中记录了SDS本身字符串的长度，所以获取字符串长度只需要访问SDS的len属性，所以时间复杂度为<code>O(1)</code>。</p>
-<p>可以看到，通过使用SDS而非c语言中的字符串，Redis将获取字符串的时间复杂度从<code>O(n)</code>降到了<code>O(1)</code>，所以这确保了获取字符串长度的工作不会成为Redis的性能瓶颈。</p>
-<p>当然，SDS与c字符串相比并不只是满足Redis在效率方面的要求，也满足了Redis对安全性以及功能方面的要求，这个我们下期再说吧。</p>
+<p>拼接完的SDS如下图所示：</p>
+<p><img src="/pic_doc/sds_after_sdscat.jpeg" alt="执行sdscat之后"></p>
+<p>注意：上图所示的SDS，sdscat不仅对SDS进行了拼接操作，还为SDS分配了13字节的未使用空间，并且拼接之后的字符串正好也是13字节长，这种现象既不是巧合，也不是bug(工业界以及大规模使用的Redis怎么会有bug！？)，这和SDS的空间分配策略有关系，空间分配策略又是Redis一个很巧妙的设计，所以，我们下一篇再讲吧！</p>
 
       
     </div>
@@ -410,8 +391,8 @@
         <div class="post-nav">
           <div class="post-nav-next post-nav-item">
             
-              <a href="/2019/10/20/LeetCode-有序数组中的单一元素/" rel="next" title="LeetCode-有序数组中的单一元素">
-                <i class="fa fa-chevron-left"></i> LeetCode-有序数组中的单一元素
+              <a href="/2019/10/23/Redis中的数据结构之简单动态字符串/" rel="next" title="Redis中的数据结构之简单动态字符串">
+                <i class="fa fa-chevron-left"></i> Redis中的数据结构之简单动态字符串
               </a>
             
           </div>
@@ -419,10 +400,6 @@
           <span class="post-nav-divider"></span>
 
           <div class="post-nav-prev post-nav-item">
-            
-              <a href="/2019/11/08/Redis中的数据结构之简单动态字符串（二）/" rel="prev" title="Redis中的数据结构之简单动态字符串（二）">
-                Redis中的数据结构之简单动态字符串（二） <i class="fa fa-chevron-right"></i>
-              </a>
             
           </div>
         </div>

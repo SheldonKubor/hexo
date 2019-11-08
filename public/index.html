@@ -253,6 +253,147 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/08/Redis中的数据结构之简单动态字符串（二）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="猫屎咖啡">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="猫屎咖啡">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/11/08/Redis中的数据结构之简单动态字符串（二）/" itemprop="url">Redis中的数据结构之简单动态字符串（二）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-08T20:10:42+08:00">
+                2019-11-08
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>上一篇我们讲到了Redis中简单动态字符串与c语言中字符串相比的一个优势，也就是获取字符串长度时的时间复杂度有了大幅度降低，满足了Redis在效率方面的要求。</p>
+<p>今天来说一下，SDS是如何满足Redis对字符串在安全性方面的要求。</p>
+<p>除了获取字符串长度的复杂度高之外，C语言中字符串不记录自身长度带来的另一个问题是容易造成缓冲区溢出（buffer overflow），例如<code>&lt;string.h&gt;/strcat</code>函数可以将<code>src</code>字符串中的内容拼接到<code>dest</code>字符串末尾。</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">char</span>* <span class="title">strcat</span><span class="params">(<span class="keyword">char</span>* dest,<span class="keyword">const</span> <span class="keyword">char</span>* src)</span></span></span><br></pre></td></tr></table></figure>
+
+<p>举个例子，假如一段程序，在内存中有两个紧紧相邻的c语言字符串<code>s1</code>和<code>s2</code>与<code>Redis</code>,<code>MongoDB</code>，如图所示</p>
+<p><img src="/pic_doc/c_string_s1&s2.jpeg" alt="在内存中紧邻的两个C字符串"> </p>
+<p>如果一个程序员决定通过使用<code>strcat</code>函数来修改<code>s1</code>的内容为<code>Redis Cluster</code></p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">strcat</span>(s1, <span class="string">"Cluster"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>但他忘了在执行<code>strcat</code>之前为<code>s1</code>分配足够的空间（众所周知，在c语言与c++中需要程序员自己手工对内存进行管理），那么就会导致<code>Cluster</code>溢出到<code>s2</code>的位置，如下图：</p>
+<p><img src="/pic_doc/c_string_s1&s2_buf_overflow.jpeg" alt="s2被溢出的内容覆盖"> </p>
+<p>而在SDS中，通过一个巧妙的方法避免了这种情况的发生，也就是利用SDS结构体中的<code>free</code>属性(在最新版的Redis中，SDS的结构体中已经移除了free属性，转而使用alloc来代替，不过两个属性的含义有所不同，但在SDS中起到的作用基本一致，这个有机会再说哈)。那么SDS是怎么使用<code>free</code>属性来杜绝缓冲区溢出的呢？</p>
+<p>举个例子：SDS的API中也有一个用于执行拼接操作的<code>sdscat</code>函数，类似于c语言中的<code>strcat</code>，当SDS中<code>sdscat</code>需要拼接字符串的时候，会先检查SDS的空间是否满足所需的要求，如果不满足的话，Redis会自动将SDS的空间扩展到所需大小，然后再执行拼接操作，所以使用SDS既不必像c语言中手动修改空间大小，也不会出现前面所说的c语言中字符串的缓冲区问题。（<code>注：这里只是举了一个拼接字符串的例子，其他的有关SDS的API在修改SDS的时候也会做上面的操作</code>）</p>
+<p>例如有以下SDS：</p>
+<p><img src="/pic_doc/redis_sds.jpeg" alt="执行sdscat之前"></p>
+<p>我们执行：</p>
+<figure class="highlight c++"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">sdscat(s,<span class="string">"Cluster"</span>);</span><br></pre></td></tr></table></figure>
+
+<p>拼接完的SDS如下图所示：</p>
+<p><img src="/pic_doc/sds_after_sdscat.jpeg" alt="执行sdscat之后"></p>
+<p>注意：上图所示的SDS，sdscat不仅对SDS进行了拼接操作，还为SDS分配了13字节的未使用空间，并且拼接之后的字符串正好也是13字节长，这种现象既不是巧合，也不是bug(工业界以及大规模使用的Redis怎么会有bug！？)，这和SDS的空间分配策略有关系，空间分配策略又是Redis一个很巧妙的设计，所以，我们下一篇再讲吧！</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/10/23/Redis中的数据结构之简单动态字符串/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1503,7 +1644,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">8</span>
+                  <span class="site-state-item-count">9</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
