@@ -253,6 +253,142 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/31/二分查找及其Java代码实现/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="猫屎咖啡">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="猫屎咖啡">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/08/31/二分查找及其Java代码实现/" itemprop="url">二分查找及其Java代码实现</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-31T14:38:11+08:00">
+                2019-08-31
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>假设我们在词典中查找一个k开头的单词，我们会怎么做呢？</p>
+<ol>
+<li>从词典第一页开始一页一页的翻页，然后直到翻到k开头的单词。</li>
+<li>直接翻页到词典大概中间的位置，然后根据词典a-z排列规律，判断翻到的页在k之前，还是之后，然后继续翻页。</li>
+</ol>
+<p>其实这就是一个查找问题，上面第二种方法就是 <code>二分查找</code></p>
+<p>我们再举一个例子：<br>我自己随便想一个 <code>1-100</code> 之间的数字，然后让你来猜，你每次猜测之后我都会告诉你，猜大了还是猜小了。（假设我心中想的数字是60）</p>
+<ol>
+<li>第一种方式：假设你从 <code>1</code> 开始依次往上猜，要猜到 <code>60</code> 你得猜60次才能猜到。这种方式就是 <code>简单查找</code>。（当然聪明如你肯定不会以这种方式来猜）</li>
+<li>第二种方式：从 <code>50</code> 开始，小了，排除<code>1-50</code>，排除了一半数字；接下来你猜 <code>75</code>，大了，又排除了一半数字<code>75-100</code>；接下来你猜 <code>63</code>，大了；依次类推，你每次猜测的都是中间的数字，从而每次都将余下的数字排除一半，无论我心中的所想的数字是几，你在7步之内就能猜到。（大家想想为什么是7次？给个提示，2的6次方是64,2的7次方是128。）</li>
+</ol>
+<p>上述第二种方式就是 <code>二分查找</code> 。</p>
+<p>一般而言，对于包含n个元素的列表，用二分查找最多需要 <code>logn</code> 步（log以2为底），用简单查找最多需要 <code>n</code> 步</p>
+<p>接下来我们看看如何编写二分查找的Java代码，有两种方式，一种是利用循环，另一种是利用递归（递归是什么此篇文章就不展开讲了，之后再讲。）</p>
+<p>另外需要注意的是，二分查找只能应用在排好顺序的数组或列表上。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* BinSearch</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BinSearch</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] arr = &#123;<span class="number">1</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">16</span>,<span class="number">45</span>,<span class="number">48</span>,<span class="number">78</span>&#125;;</span><br><span class="line">        <span class="keyword">int</span> index = recursionBinarySearch(arr,<span class="number">48</span>,<span class="number">0</span>,arr.length-<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">int</span> index2 = commonBinarySearch(arr,<span class="number">48</span>);</span><br><span class="line">        System.out.println(index);</span><br><span class="line">        System.out.println(index2);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//递归</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">recursionBinarySearch</span><span class="params">(<span class="keyword">int</span>[] arr,<span class="keyword">int</span> key,<span class="keyword">int</span> low,<span class="keyword">int</span> high)</span></span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(key &lt; arr[low] || key &gt; arr[high] || low &gt; high)&#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;              </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> middle = (low + high) / <span class="number">2</span>;          <span class="comment">//初始中间位置</span></span><br><span class="line">        <span class="keyword">if</span>(arr[middle] &gt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字大则关键字在左区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,low,middle-<span class="number">1</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字小则关键字在右区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,middle+<span class="number">1</span>,high);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> middle;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//循环</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">commonBinarySearch</span><span class="params">(<span class="keyword">int</span>[] arr,<span class="keyword">int</span> key)</span></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> low = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> high = arr.length - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">int</span> middle = <span class="number">0</span>;         <span class="comment">//定义middle</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(key &lt; arr[low] || key &gt; arr[high] || low &gt; high)&#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;              </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span>(low &lt;= high)&#123;</span><br><span class="line">            middle = (low + high) / <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">if</span>(arr[middle] &gt; key)&#123;</span><br><span class="line">                <span class="comment">//比关键字大则关键字在左区域</span></span><br><span class="line">                high = middle - <span class="number">1</span>;</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;</span><br><span class="line">                <span class="comment">//比关键字小则关键字在右区域</span></span><br><span class="line">                low = middle + <span class="number">1</span>;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                <span class="keyword">return</span> middle;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;      <span class="comment">//最后仍然没有找到，则返回-1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/27/Java中的instanceof关键字/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -431,7 +567,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -444,7 +580,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>

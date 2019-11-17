@@ -253,6 +253,160 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/17/MySQL优化（一）之简单介绍/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="猫屎咖啡">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="猫屎咖啡">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/11/17/MySQL优化（一）之简单介绍/" itemprop="url">MySQL优化（一）之简单介绍</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-17T17:40:13+08:00">
+                2019-11-17
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>做后端开发的同学们免不了接触MySQL，虽然现在有很多ORM框架，但是个人认为，在一些情况下还是需要我们手工写SQL的，个人也比较喜欢手写SQL，可能是做过半年数据分析类工作的原因吧。而能够手写SQL查询出我们想要的数据只是一个合格后端开发工程师的基本素质，我们还得学习如何优化我们的SQL，虽然现在很多大公司都有DBA这个职位，但是我们做后端开发的多了解一些SQL优化的知识也是很有帮助的。</p>
+<p>说到数据库优化，我们最常遇到的就是查询优化，而最常用的查询优化手段就是建立索引。还有就是在建库建表的时候就要做好的库表结构优化。</p>
+<p>查询优化，索引优化，库表结构优化需要齐头并进，一个不落。这三者相辅相成，在获得编写sql查询优化的经验的同时，我们也会学习到如何为高效的查询设计表结构以及索引，同样的，也可以学习到优化库表结构时将会影响到那些类型的查询。</p>
+<p>一条sql语句为什么需要优化？那绝对是因为它的查询速度慢，那么为什么查询速度会慢呢？</p>
+<p>查询性能低下最基本的原因就是访问的数据太多。某些查询了能不可避免的需要筛选大量数据，但这种情况不常见。大部分性能低下的查询都可以通过减少访问数据量的方式进行优化。对于低效的查询，我们首先可以通过以下两个步骤来分析：</p>
+<pre><code>1. 确认应用程序是够在检索大量超过我们实际需要的数据。这通常意味着我们访问了太多的行或者列。
+2. 确认MySQL服务层是够在分析大量超过需要的数据行。</code></pre><p>知道了从哪方面入手，那么就会知道如何优化了</p>
+<p>第一，访问太多行或者列的：</p>
+<ol>
+<li>若是访问太多行</li>
+</ol>
+<p>例如，在某个新闻网站中取出100条记录，但只是在页面上显示前10条。对于这种，最简单的就是在查询后面加上<code>limit</code>。</p>
+<ol start="2">
+<li>若是访问太多的列</li>
+</ol>
+<p>例如：我只想查询学生的名字，我们应该使用如下语句</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> <span class="keyword">name</span> <span class="keyword">from</span> students;</span><br></pre></td></tr></table></figure>
+
+<p>而不是使用</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">select</span> * <span class="keyword">from</span> students;</span><br></pre></td></tr></table></figure>
+
+<p>这两个方法看起来很基础对不对，虽然基础，但是很有效。其实这也算不上什么优化，只是我们在开发中需要注意的细节问题。</p>
+<p>另外需要注意的是，总是取出全部的列，会让优化器无法完成索引覆盖扫描这类优化，还会为服务器带来额外的I/O、内存、CPU的消耗，因此，一些DBA是严格禁止使用<code>select *</code>这种写法的，这样做有时候还能避免某些列被修改带来的问题。</p>
+<p>但是，查询返回超过需要的数据也并不总是坏事，作为后端开发深有体会的一点就是，这种浪费数据库资源的方式可以简化开发。例如，在现在前后端分离的开发中，前端所需要展示哪些字段的数据，都是我们后端查询之后再返回给他的，但是，前端展示的字段并不是一成不变的，并不是总是那几个字段，因为有时候产品需求会变更，比如，今天的需求是展示名字，性别。明天的需求就可能变为展示名字，性别，年龄，身高等等等等。这种情况下，我们就需要频繁的修改我们的代码以满足一天一变的产品需求（需求天天变对于开发来说很苦逼的）。由于经常有这种情况发生，所以一些开发人员就会直接使用<code>select *</code>这种写法，不是爱改需求吗，那我就我把数据都给你，你想展示什么自己挑着用吧。。这种方式虽然不满足优化的思想，但是确实简化了开发，但是我们也不能为了简化开发一味的使用<code>select *</code>，我们使用这种方式的前提是我们清楚这样做的性能影响。</p>
+<p>第二，分析（扫描）了大量超过需要的数据行</p>
+<p>在确定查询只返回需要的数据以后，接下来我们应该看看查询为了返回这些结果，是否扫描了过多的数据。在分析查询时，查看该查询扫描的行数是非常有帮助的，这也能在一定程度上说明该查询的效率高不高，也就是<code>所需行数/扫描行数</code>的比值高不高。这里我们就要使用到<code>explain</code>关键字了，其中<code>type</code>列反应了访问类型，从全表扫描到索引扫描，范围扫描，唯一索引查询，常数引用等等。这些速度从慢到快，扫描的行数也是从多到少。如果没有找到合适的访问类型，通常最好的解决办法就是增加一个合适的索引，这也是为什么索引对查询优化这么重要的原因了，因为索引能让MySQL以最高效，扫描行数最少的方式找到需要的记录。</p>
+<p>需要注意的是，索引只是尽可能的只扫描所需要的数据行，并不是说增加索引就能让扫描的行数等于返回的行数。例如</p>
+<figure class="highlight sql"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">-- 假设actor_id上建索引</span></span><br><span class="line"><span class="keyword">select</span> actor_id,<span class="keyword">count</span>(*) <span class="keyword">from</span> movie <span class="keyword">group</span> <span class="keyword">by</span> actor_id; <span class="comment">-- 使用了聚合函数，返回的行数大多数情况下远远小于扫描的行数</span></span><br></pre></td></tr></table></figure>
+
+<p>如果发现查询需要扫描大量的数据但只返回少数的几行，那么通常可以尝试下面的技巧去优化：</p>
+<ol>
+<li>使用索引覆盖扫描，把所有需要用的列都放在索引中，这样存储引擎无需回表获取对应行就可以返回结果了。</li>
+<li>改变库表结构，例如使用单独的汇总表（例如上述聚合函数的情况优化）</li>
+<li>重写复杂查询，让MySQL优化器能够以更优化的方式执行查询</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/17/Java并发编程（二）之线程的创建/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1595,142 +1749,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/08/31/二分查找及其Java代码实现/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="猫屎咖啡">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="猫屎咖啡">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/08/31/二分查找及其Java代码实现/" itemprop="url">二分查找及其Java代码实现</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-08-31T14:38:11+08:00">
-                2019-08-31
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>假设我们在词典中查找一个k开头的单词，我们会怎么做呢？</p>
-<ol>
-<li>从词典第一页开始一页一页的翻页，然后直到翻到k开头的单词。</li>
-<li>直接翻页到词典大概中间的位置，然后根据词典a-z排列规律，判断翻到的页在k之前，还是之后，然后继续翻页。</li>
-</ol>
-<p>其实这就是一个查找问题，上面第二种方法就是 <code>二分查找</code></p>
-<p>我们再举一个例子：<br>我自己随便想一个 <code>1-100</code> 之间的数字，然后让你来猜，你每次猜测之后我都会告诉你，猜大了还是猜小了。（假设我心中想的数字是60）</p>
-<ol>
-<li>第一种方式：假设你从 <code>1</code> 开始依次往上猜，要猜到 <code>60</code> 你得猜60次才能猜到。这种方式就是 <code>简单查找</code>。（当然聪明如你肯定不会以这种方式来猜）</li>
-<li>第二种方式：从 <code>50</code> 开始，小了，排除<code>1-50</code>，排除了一半数字；接下来你猜 <code>75</code>，大了，又排除了一半数字<code>75-100</code>；接下来你猜 <code>63</code>，大了；依次类推，你每次猜测的都是中间的数字，从而每次都将余下的数字排除一半，无论我心中的所想的数字是几，你在7步之内就能猜到。（大家想想为什么是7次？给个提示，2的6次方是64,2的7次方是128。）</li>
-</ol>
-<p>上述第二种方式就是 <code>二分查找</code> 。</p>
-<p>一般而言，对于包含n个元素的列表，用二分查找最多需要 <code>logn</code> 步（log以2为底），用简单查找最多需要 <code>n</code> 步</p>
-<p>接下来我们看看如何编写二分查找的Java代码，有两种方式，一种是利用循环，另一种是利用递归（递归是什么此篇文章就不展开讲了，之后再讲。）</p>
-<p>另外需要注意的是，二分查找只能应用在排好顺序的数组或列表上。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br><span class="line">37</span><br><span class="line">38</span><br><span class="line">39</span><br><span class="line">40</span><br><span class="line">41</span><br><span class="line">42</span><br><span class="line">43</span><br><span class="line">44</span><br><span class="line">45</span><br><span class="line">46</span><br><span class="line">47</span><br><span class="line">48</span><br><span class="line">49</span><br><span class="line">50</span><br><span class="line">51</span><br><span class="line">52</span><br><span class="line">53</span><br><span class="line">54</span><br><span class="line">55</span><br></pre></td><td class="code"><pre><span class="line"></span><br><span class="line"><span class="comment">/**</span></span><br><span class="line"><span class="comment">* BinSearch</span></span><br><span class="line"><span class="comment">*/</span></span><br><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">BinSearch</span> </span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        <span class="keyword">int</span>[] arr = &#123;<span class="number">1</span>,<span class="number">4</span>,<span class="number">8</span>,<span class="number">16</span>,<span class="number">45</span>,<span class="number">48</span>,<span class="number">78</span>&#125;;</span><br><span class="line">        <span class="keyword">int</span> index = recursionBinarySearch(arr,<span class="number">48</span>,<span class="number">0</span>,arr.length-<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">int</span> index2 = commonBinarySearch(arr,<span class="number">48</span>);</span><br><span class="line">        System.out.println(index);</span><br><span class="line">        System.out.println(index2);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//递归</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">recursionBinarySearch</span><span class="params">(<span class="keyword">int</span>[] arr,<span class="keyword">int</span> key,<span class="keyword">int</span> low,<span class="keyword">int</span> high)</span></span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(key &lt; arr[low] || key &gt; arr[high] || low &gt; high)&#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;              </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> middle = (low + high) / <span class="number">2</span>;          <span class="comment">//初始中间位置</span></span><br><span class="line">        <span class="keyword">if</span>(arr[middle] &gt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字大则关键字在左区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,low,middle-<span class="number">1</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字小则关键字在右区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,middle+<span class="number">1</span>,high);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> middle;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="comment">//循环</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">commonBinarySearch</span><span class="params">(<span class="keyword">int</span>[] arr,<span class="keyword">int</span> key)</span></span>&#123;</span><br><span class="line">        <span class="keyword">int</span> low = <span class="number">0</span>;</span><br><span class="line">        <span class="keyword">int</span> high = arr.length - <span class="number">1</span>;</span><br><span class="line">        <span class="keyword">int</span> middle = <span class="number">0</span>;         <span class="comment">//定义middle</span></span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(key &lt; arr[low] || key &gt; arr[high] || low &gt; high)&#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;              </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">while</span>(low &lt;= high)&#123;</span><br><span class="line">            middle = (low + high) / <span class="number">2</span>;</span><br><span class="line">            <span class="keyword">if</span>(arr[middle] &gt; key)&#123;</span><br><span class="line">                <span class="comment">//比关键字大则关键字在左区域</span></span><br><span class="line">                high = middle - <span class="number">1</span>;</span><br><span class="line">            &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;</span><br><span class="line">                <span class="comment">//比关键字小则关键字在右区域</span></span><br><span class="line">                low = middle + <span class="number">1</span>;</span><br><span class="line">            &#125;<span class="keyword">else</span>&#123;</span><br><span class="line">                <span class="keyword">return</span> middle;</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        <span class="keyword">return</span> -<span class="number">1</span>;      <span class="comment">//最后仍然没有找到，则返回-1</span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1781,7 +1799,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">12</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
@@ -1794,7 +1812,7 @@
               
               <div class="site-state-item site-state-tags">
                 <a href="/tags/index.html">
-                  <span class="site-state-item-count">11</span>
+                  <span class="site-state-item-count">13</span>
                   <span class="site-state-item-name">标签</span>
                 </a>
               </div>
