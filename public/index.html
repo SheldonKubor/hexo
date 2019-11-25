@@ -253,6 +253,396 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/24/Java并发编程（四）之线程安全问题/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="猫屎咖啡">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="猫屎咖啡">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/11/24/Java并发编程（四）之线程安全问题/" itemprop="url">Java并发编程（四）之线程安全问题</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-24T19:24:41+08:00">
+                2019-11-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>讲完创建线程的方法，接下来我们学习一下多线程编程中会遇到的线程安全问题。</p>
+<p>谈到线程安全，就会涉及到共享资源，所谓共享资源，就是指该资源被多个线程使用。线程安全问题就是，当多个线程同时读写同一个共享资源的时候，没有加任何同步措施，导致出现脏数据，以及预料之外的结果。</p>
+<p>例如下面代码：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadSafeTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> count = <span class="number">5</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        MyThreadSafeTest thread1 = <span class="keyword">new</span> MyThreadSafeTest();</span><br><span class="line">        MyThreadSafeTest thread2 = <span class="keyword">new</span> MyThreadSafeTest();</span><br><span class="line">        thread1.start();</span><br><span class="line">        thread2.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyThreadSafeTest</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;   </span><br><span class="line">        <span class="keyword">while</span>(ThreadSafeTest.count&gt;<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">500</span>);</span><br><span class="line">                sale();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">        &#125;   </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sale</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">if</span> (ThreadSafeTest.count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">            --ThreadSafeTest.count;</span><br><span class="line">            System.out.println(Thread.currentThread().getName() + <span class="string">",出售第"</span> + (<span class="number">5</span> - ThreadSafeTest.count) + <span class="string">"张票"</span>);</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Thread-<span class="number">1</span>,出售第<span class="number">2</span>张票</span><br><span class="line">Thread-<span class="number">0</span>,出售第<span class="number">2</span>张票</span><br><span class="line">Thread-<span class="number">1</span>,出售第<span class="number">3</span>张票</span><br><span class="line">Thread-<span class="number">0</span>,出售第<span class="number">4</span>张票</span><br><span class="line">Thread-<span class="number">1</span>,出售第<span class="number">5</span>张票</span><br></pre></td></tr></table></figure>
+
+<p>我们模拟了多窗口售票的问题，每个线程就是一个窗口。可以看到，会出现一张票卖出多次的情况，这显然是不合理的。</p>
+<p>这是由于什么原因导致的呢？要查找其原因，首先我们需要了解Java的内存模型。如下图：</p>
+<p><img src="/pic_doc/java_mem_model.jpg" alt="Java内存模型"> </p>
+<p>Java内存模型规定，将所有的变量都放在主内存中，当线程使用变量的时候从主内存中将变量复制一份到自己的工作空间或者说工作内存，线程读写变量时操作的是自己工作内存中的变量。</p>
+<p>Java内存模型是一个抽象的概念，实际实现中的工作内存是什么样子呢？</p>
+<p><img src="/pic_doc/cpu_mem_model.jpg" alt> </p>
+<p>图中所示是一个双核CPU的架构，Java内存模型里面的工作内存就对应这里的L1或者L2或者CPU的寄存器。</p>
+<p>当一个线程操作共享变量时，它首先从主内存复制共享变量到自己的工作内存，对工作内存里的变量进行处理，处理完后将变最值更新到主内存。</p>
+<p>那么假如线程A和线程B同时处理一个共享变量，会出现什么情况？我们使用图中所示CPU架构，假设线程A和线程B使用不同CPU执行，并且当前两级Cache都为空。那么这时候由于Cache的存在，将会导致内存不可见问题，具体看下面的分析。</p>
+<ol>
+<li>线程A首先获取共享变量X的值，由于两级Cache都没有命中，所以加教木中X的值，假如为0。然后把X=0的值缓存到两级缓存，线程A修改X的值为1，然后将其写入两级Cache，并且刷新到主内存。线程A操作完毕后，线程A所在CPU的两级Cache内和主内存里面的X的值都是1。</li>
+<li>线程B获取X的值，首先一级缓存没有命中，然后看二级缓存，二级缓存命的所以返回X=1，到这里一切都是正常的，因为这时候主内存中也是X=1。然后线程B修改X的值为2,并将其存放线程B所在的一级Cache和共享二级Cache中，最后更新主内存中X的值为2，到这里一切都是好的。</li>
+<li>线程A这次又需要修改X的值，获取时一级缓存命中，并且X=1，到这里问题与出现了，明明线程B已经把X的值修改为了2，为何线程A获取的还是1呢？这就是共享变量的内存不可见问题，也就是线程B写入的值对线程A不可见。</li>
+</ol>
+<p>了解了这些，我们就会明白，上述代码中，一张票卖多次的问题是如何导致的了，就是因为<code>thread1</code>与<code>thread2</code>由于内存模型导致的共享变量<code>count</code>内存不可见。</p>
+<p>那么如何解决呢？</p>
+<p>大学时候我们学过使用<code>synchronized</code>加锁来解决线程安全问题，例如上述卖票代码改为如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br><span class="line">30</span><br><span class="line">31</span><br><span class="line">32</span><br><span class="line">33</span><br><span class="line">34</span><br><span class="line">35</span><br><span class="line">36</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">ThreadSafeTest</span> </span>&#123;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> count = <span class="number">5</span>;</span><br><span class="line">    <span class="keyword">public</span> <span class="keyword">static</span> String lock = <span class="string">"lock"</span>;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        MyThreadSafeTest thread1 = <span class="keyword">new</span> MyThreadSafeTest();</span><br><span class="line">        MyThreadSafeTest thread2 = <span class="keyword">new</span> MyThreadSafeTest();</span><br><span class="line">        thread1.start();</span><br><span class="line">        thread2.start();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="class"><span class="keyword">class</span> <span class="title">MyThreadSafeTest</span> <span class="keyword">extends</span> <span class="title">Thread</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;   </span><br><span class="line">        <span class="keyword">while</span>(ThreadSafeTest.count&gt;<span class="number">0</span>)&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">500</span>);</span><br><span class="line">                sale();</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">        &#125;   </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">sale</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        <span class="keyword">synchronized</span>(ThreadSafeTest.lock)&#123;</span><br><span class="line">            <span class="keyword">if</span> (ThreadSafeTest.count &gt; <span class="number">0</span>) &#123;</span><br><span class="line">                --ThreadSafeTest.count;</span><br><span class="line">                System.out.println(Thread.currentThread().getName() + <span class="string">",出售第"</span> + (<span class="number">5</span> - ThreadSafeTest.count) + <span class="string">"张票"</span>);</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">Thread-<span class="number">0</span>,出售第<span class="number">1</span>张票</span><br><span class="line">Thread-<span class="number">1</span>,出售第<span class="number">2</span>张票</span><br><span class="line">Thread-<span class="number">0</span>,出售第<span class="number">3</span>张票</span><br><span class="line">Thread-<span class="number">1</span>,出售第<span class="number">4</span>张票</span><br><span class="line">Thread-<span class="number">0</span>,出售第<span class="number">5</span>张票</span><br></pre></td></tr></table></figure>
+
+<p>我们对卖票的操作进行了加锁，加锁之后，就没有出现共享变量混乱的问题，那么<code>synchronized</code>到底是什么呢？怎么实现的共享变量内存可见呢？</p>
+<p><code>synchronized</code>块是Java提供的一种原子性内置锁，Java中的每个对象都可以把它当做一个同步锁来使用，这些Java内置的使用者看不到的锁被称为内部锁，也叫作监视器锁，线程的执行代码在进入<code>synchronized</code>代码块前会自动获取内部锁，这时候其他线程访问该同步代码块时会被阻塞挂起。拿到内部锁的线程会在正常退出同步代码块或者抛出异常后或者在同步块内调用了该内置锁资源的<code>wait</code>系列方法时释放该内置锁。内置锁是排它锁，也就是当一个线程获取这个锁后，其他线程必须等待该线程释放锁后才能获取该锁。</p>
+<p>由于共享变量内存可见性问题主要是由于线程的工作内存导致的，使用<code>synchronized</code>的时候，它的内存语义是什么样的呢？（也就是加锁和释放锁的语义）。</p>
+<p>进入<code>synchronized</code>块的内存语义（加锁）是把在<code>synchronized</code>共内使用到的共享变量从线程的工作内存中清除，这样在<code>synchronized</code>块内使用到该变量时就不会从线程的工作内存中获取，而是直接从主内存中获取。退出<code>synchronized</code>块的内存语义（释放锁）是把在<code>synchronized</code>块内对共享变量的修改刷新到主内存。</p>
+<p>除可以解决共享变量内存可见性问题外，synchronized 经常被用来实现原子性操作。另外请注意，synchronized 关键字会引起线程上下文切换并带来线程调度开销，所以使用锁太笨重，尤其是在Java1.6之前，没有对synchronized进行优化。对于内存可见性的问题，Java还提供了一种弱同步，也就是使用 <code>volatile</code> 关键字，这个由于篇幅问题，下一篇文章再讲吧。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/24/Java并发编程（三）之线程池的使用/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="猫屎咖啡">
+      <meta itemprop="description" content>
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="猫屎咖啡">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2019/11/24/Java并发编程（三）之线程池的使用/" itemprop="url">Java并发编程（三）之线程池的使用</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">发表于</span>
+              
+              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-11-24T16:40:14+08:00">
+                2019-11-24
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <p>之前我们在如何创建线程的文章中介绍到了线程池创建线程，接下来学习一下如何使用线程池创建线程。</p>
+<p>Java通过Executors提供四种常用线程池，这四种线程池都是通过<code>ThreadPoolExecutor</code>实现的，我们来看一下其构造方法</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="title">ThreadPoolExecutor</span><span class="params">(<span class="keyword">int</span> corePoolSize,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">int</span> maximumPoolSize,</span></span></span><br><span class="line"><span class="function"><span class="params">                              <span class="keyword">long</span> keepAliveTime,</span></span></span><br><span class="line"><span class="function"><span class="params">                              TimeUnit unit,</span></span></span><br><span class="line"><span class="function"><span class="params">                              BlockingQueue&lt;Runnable&gt; workQueue,</span></span></span><br><span class="line"><span class="function"><span class="params">                              ThreadFactory threadFactory,</span></span></span><br><span class="line"><span class="function"><span class="params">                              RejectedExecutionHandler handler)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (corePoolSize &lt; <span class="number">0</span> ||</span><br><span class="line">        maximumPoolSize &lt;= <span class="number">0</span> ||</span><br><span class="line">        maximumPoolSize &lt; corePoolSize ||</span><br><span class="line">        keepAliveTime &lt; <span class="number">0</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> IllegalArgumentException();</span><br><span class="line">    <span class="keyword">if</span> (workQueue == <span class="keyword">null</span> || threadFactory == <span class="keyword">null</span> || handler == <span class="keyword">null</span>)</span><br><span class="line">        <span class="keyword">throw</span> <span class="keyword">new</span> NullPointerException();</span><br><span class="line">    <span class="keyword">this</span>.acc = System.getSecurityManager() == <span class="keyword">null</span> ?</span><br><span class="line">            <span class="keyword">null</span> :</span><br><span class="line">            AccessController.getContext();</span><br><span class="line">    <span class="keyword">this</span>.corePoolSize = corePoolSize;</span><br><span class="line">    <span class="keyword">this</span>.maximumPoolSize = maximumPoolSize;</span><br><span class="line">    <span class="keyword">this</span>.workQueue = workQueue;</span><br><span class="line">    <span class="keyword">this</span>.keepAliveTime = unit.toNanos(keepAliveTime);</span><br><span class="line">    <span class="keyword">this</span>.threadFactory = threadFactory;</span><br><span class="line">    <span class="keyword">this</span>.handler = handler;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>构造方法内具体的逻辑我们先忽略，先来看看构造方法的参数含义：</p>
+<ol>
+<li>corePoolSize: 线程池核心线程个数</li>
+<li>maximumPoolSize： 线程池最大线程个数</li>
+<li>keepAliveTime： 线程存活时间，指的是如果当前线程池中的线程数量比核心线程数量多，并且是闲置状态，则这些闲置线程能存活的最大时间</li>
+<li>unit： 存活时间的时间单位</li>
+<li>workQueue： 用于保存等待执行的任务的阻塞队列，比如基于数组的有界队列<code>ArrayBlockingQueue</code>，基于链表的<code>LinkedBlockingQueue</code>等</li>
+<li>threadFactory： 创建线程的工厂</li>
+<li>handler： 拒绝策略，当队列满了，并且线程个数达到maximumPoolSize后采取的拒绝策略</li>
+</ol>
+<p><code>Executors</code>中创建线程池的方法其实就是通过使用<code>ThreadPoolExecutor</code>构造方法的不同参数来创建不同类型的线程池 </p>
+<p>接下来我们深入源码看一看<code>Executors</code>中创建线程池的方法，它是如何使用<code>ThreadPoolExecutor</code>来创建线程池的</p>
+<ol>
+<li>单线程化线程池（SingleThreadExecutor）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title">newSingleThreadExecutor</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> FinalizableDelegatedExecutorService</span><br><span class="line">        (<span class="keyword">new</span> ThreadPoolExecutor(<span class="number">1</span>, <span class="number">1</span>,</span><br><span class="line">                                <span class="number">0L</span>, TimeUnit.MILLISECONDS,</span><br><span class="line">                                <span class="keyword">new</span> LinkedBlockingQueue&lt;Runnable&gt;()));</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title">newSingleThreadExecutor</span><span class="params">(ThreadFactory threadFactory)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> FinalizableDelegatedExecutorService</span><br><span class="line">        (<span class="keyword">new</span> ThreadPoolExecutor(<span class="number">1</span>, <span class="number">1</span>,</span><br><span class="line">                                <span class="number">0L</span>, TimeUnit.MILLISECONDS,</span><br><span class="line">                                <span class="keyword">new</span> LinkedBlockingQueue&lt;Runnable&gt;(),</span><br><span class="line">                                threadFactory));</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>特点：创建一个核心线程个数和最大线程个数都为1的线程池，并且阻塞队列长度为Integer.MAX_VALUE。keepAliveTime为0说明只要线程个数比核心线程数多并且当前空闲则回收。</li>
+<li>应用场景：不适合并发但可能引起IO阻塞性及影响UI线程响应的操作，如数据库操作、文件操作等。</li>
+</ul>
+<p>使用示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line">ExecutorService singleThreadExecutor = Executors.newSingleThreadExecutor();</span><br><span class="line"></span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> index = i;</span><br><span class="line">    singleThreadExecutor.execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line"></span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                System.out.println(index);</span><br><span class="line">                Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果为</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0</span></span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="number">4</span></span><br><span class="line"><span class="number">5</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line"><span class="number">7</span></span><br><span class="line"><span class="number">8</span></span><br><span class="line"><span class="number">9</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到，index的值是递增的，因为只有一个线程在执行任务</p>
+<ol start="2">
+<li>定长线程池（FixedThreadPool）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title">newFixedThreadPool</span><span class="params">(<span class="keyword">int</span> nThreads)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ThreadPoolExecutor(nThreads, nThreads,</span><br><span class="line">                                    <span class="number">0L</span>, TimeUnit.MILLISECONDS,</span><br><span class="line">                                    <span class="keyword">new</span> LinkedBlockingQueue&lt;Runnable&gt;());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title">newFixedThreadPool</span><span class="params">(<span class="keyword">int</span> nThreads, ThreadFactory threadFactory)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ThreadPoolExecutor(nThreads, nThreads,</span><br><span class="line">                                    <span class="number">0L</span>, TimeUnit.MILLISECONDS,</span><br><span class="line">                                    <span class="keyword">new</span> LinkedBlockingQueue&lt;Runnable&gt;(),</span><br><span class="line">                                    threadFactory);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>特点：只有核心线程，线程数量固定（其<code>corePoolSize</code>和<code>maximumPoolSize</code>值相同），执行完立即回收（<code>keepAliveTime</code>为0），阻塞队列长度为Integer.MAX_VALUE。</li>
+<li>应用场景：控制线程最大并发数。</li>
+</ul>
+<p>使用示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">ExecutorService fixedThreadPool = Executors.newFixedThreadPool(<span class="number">3</span>);</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> index = i;</span><br><span class="line"></span><br><span class="line">    fixedThreadPool.execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                System.out.println(index);</span><br><span class="line">                Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果为：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">0</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="number">4</span></span><br><span class="line"><span class="number">5</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line"><span class="number">7</span></span><br><span class="line"><span class="number">8</span></span><br><span class="line"><span class="number">9</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到，index的值不是递增的，因为只有三个线程在执行任务</p>
+<ol start="3">
+<li>可缓存线程池（CachedThreadPool）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title">newCachedThreadPool</span><span class="params">()</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ThreadPoolExecutor(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                    <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                    <span class="keyword">new</span> SynchronousQueue&lt;Runnable&gt;());</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ExecutorService <span class="title">newCachedThreadPool</span><span class="params">(ThreadFactory threadFactory)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ThreadPoolExecutor(<span class="number">0</span>, Integer.MAX_VALUE,</span><br><span class="line">                                    <span class="number">60L</span>, TimeUnit.SECONDS,</span><br><span class="line">                                    <span class="keyword">new</span> SynchronousQueue&lt;Runnable&gt;(),</span><br><span class="line">                                    threadFactory);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>特点：无核心线程，非核心线程数量无限，执行完闲置60s后回收，这个类型的特殊之处在于，加入同步队列的任务会被马上执行，同步队列里面最多只有一个任务（因为每来一个任务就会马上创建一个线程来执行）</li>
+<li>应用场景：执行大量、耗时少的任务。</li>
+</ul>
+<p>使用示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line">ExecutorService cachedThreadPool = Executors.newCachedThreadPool();</span><br><span class="line"><span class="keyword">for</span> (<span class="keyword">int</span> i = <span class="number">0</span>; i &lt; <span class="number">10</span>; i++) &#123;</span><br><span class="line">    <span class="keyword">final</span> <span class="keyword">int</span> index = i;</span><br><span class="line">    cachedThreadPool.execute(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">        <span class="meta">@Override</span></span><br><span class="line">        <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">            <span class="keyword">try</span> &#123;</span><br><span class="line">                Thread.sleep(<span class="number">2000</span>);</span><br><span class="line">                System.out.println(index);</span><br><span class="line">            &#125; <span class="keyword">catch</span> (InterruptedException e) &#123;</span><br><span class="line">                e.printStackTrace();</span><br><span class="line">            &#125;</span><br><span class="line">            </span><br><span class="line">        &#125;</span><br><span class="line">    &#125;);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">8</span></span><br><span class="line"><span class="number">6</span></span><br><span class="line"><span class="number">2</span></span><br><span class="line"><span class="number">4</span></span><br><span class="line"><span class="number">0</span></span><br><span class="line"><span class="number">3</span></span><br><span class="line"><span class="number">1</span></span><br><span class="line"><span class="number">5</span></span><br><span class="line"><span class="number">7</span></span><br><span class="line"><span class="number">9</span></span><br></pre></td></tr></table></figure>
+
+<p>可以看到，index的值不是递增的，原因与上一个相同。</p>
+<ol start="4">
+<li>定时线程池（ScheduledThreadPool）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ScheduledExecutorService <span class="title">newScheduledThreadPool</span><span class="params">(<span class="keyword">int</span> corePoolSize)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ScheduledThreadPoolExecutor(corePoolSize);</span><br><span class="line">&#125;</span><br><span class="line"></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> ScheduledExecutorService <span class="title">newScheduledThreadPool</span><span class="params">(</span></span></span><br><span class="line"><span class="function"><span class="params">        <span class="keyword">int</span> corePoolSize, ThreadFactory threadFactory)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">return</span> <span class="keyword">new</span> ScheduledThreadPoolExecutor(corePoolSize, threadFactory);</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li><p>注：这个与上面三个有点区别，这是使用的是<code>ScheduledThreadPoolExecutor</code>创建的，此类继承<code>ThreadPoolExecutor</code>类。</p>
+</li>
+<li><p>特点：核心线程数量固定，非核心线程数量无限，执行完闲置10ms后回收，任务队列为延时阻塞队列。</p>
+</li>
+<li><p>应用场景：执行定时或周期性的任务。</p>
+</li>
+</ul>
+<p>使用示例：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">ScheduledExecutorService scheduledThreadPool = Executors.newScheduledThreadPool(<span class="number">5</span>);</span><br><span class="line">scheduledThreadPool.schedule(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"delay 3 seconds"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="number">3</span>, TimeUnit.SECONDS);</span><br></pre></td></tr></table></figure>
+
+<p>执行结果：<br>    延迟3秒后打印出<code>delay 3 seconds</code></p>
+<p>下面我们来用代码具体看下，这些线程池的区别</p>
+<ol>
+<li>单线程化线程池（SingleThreadExecutor）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">// 创建一个单线程的线程池  </span></span><br><span class="line">ExecutorService pool = Executors.newSingleThreadExecutor();  </span><br><span class="line"><span class="comment">// 创建线程  </span></span><br><span class="line">Thread t1 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t2 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t3 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t4 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t5 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line"><span class="comment">// 将线程放入池中进行执行  </span></span><br><span class="line">pool.execute(t1);  </span><br><span class="line">pool.execute(t2);  </span><br><span class="line">pool.execute(t3);  </span><br><span class="line">pool.execute(t4);  </span><br><span class="line">pool.execute(t5);  </span><br><span class="line"><span class="comment">// 关闭线程池  </span></span><br><span class="line">pool.shutdown();</span><br></pre></td></tr></table></figure>
+
+<p>执行结果：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br></pre></td></tr></table></figure>
+
+<p>通过执行结果我们可以看到，虽然我们在线程池中放了5个线程，但是由于线程池是单线程池，所以只有第一个线程存在于线程池中。<br>每次调用execute方法，其实最后都是调用了thread-1的run方法。</p>
+<ol start="2">
+<li>定长线程池（FixedThreadPool）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">ExecutorService pool = Executors.newFixedThreadPool(<span class="number">5</span>);</span><br><span class="line"><span class="comment">// 创建线程  </span></span><br><span class="line">Thread t1 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t2 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t3 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t4 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t5 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line"><span class="comment">// 将线程放入池中进行执行  </span></span><br><span class="line">pool.execute(t1);  </span><br><span class="line">pool.execute(t2);  </span><br><span class="line">pool.execute(t3);  </span><br><span class="line">pool.execute(t4);  </span><br><span class="line">pool.execute(t5);  </span><br><span class="line"><span class="comment">// 关闭线程池  </span></span><br><span class="line">pool.shutdown();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">4</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">3</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">5</span>正在执行。。。</span><br></pre></td></tr></table></figure>
+
+<p>将<code>Executors.newFixedThreadPool(5)</code>中的<code>5</code>改为<code>2</code>再试试</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>正在执行。。。</span><br></pre></td></tr></table></figure>
+
+<p>从以上结果可以看出，newFixedThreadPool的参数指定了可以运行的线程的最大数目，超过这个数目的线程加进去以后，不会运行。其次，加入线程池的线程属于托管状态，线程的运行不受加入顺序的影响。</p>
+<ol start="3">
+<li>可缓存线程池（CachedThreadPool）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line">ExecutorService pool = Executors.newCachedThreadPool();</span><br><span class="line"><span class="comment">// 创建线程  </span></span><br><span class="line">Thread t1 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t2 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t3 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t4 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line">Thread t5 = <span class="keyword">new</span> MyThreadPoolTest();  </span><br><span class="line"><span class="comment">// 将线程放入池中进行执行  </span></span><br><span class="line">pool.execute(t1);  </span><br><span class="line">pool.execute(t2);  </span><br><span class="line">pool.execute(t3);  </span><br><span class="line">pool.execute(t4);  </span><br><span class="line">pool.execute(t5);  </span><br><span class="line"><span class="comment">// 关闭线程池  </span></span><br><span class="line">pool.shutdown();</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line">pool-<span class="number">1</span>-thread-<span class="number">1</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">3</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">2</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">5</span>正在执行。。。</span><br><span class="line">pool-<span class="number">1</span>-thread-<span class="number">4</span>正在执行。。。</span><br></pre></td></tr></table></figure>
+
+<p>这种方式的特点是：可根据需要创建新线程的线程池，但是在以前构造的线程可用时将重用它们。</p>
+<ol start="4">
+<li>定时线程池（ScheduledThreadPool）</li>
+</ol>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br></pre></td><td class="code"><pre><span class="line">ScheduledThreadPoolExecutor exec = <span class="keyword">new</span> ScheduledThreadPoolExecutor(<span class="number">1</span>);</span><br><span class="line">exec.scheduleAtFixedRate(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"================"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="number">1000</span>, <span class="number">5000</span>, TimeUnit.MILLISECONDS);</span><br><span class="line"></span><br><span class="line">exec.scheduleAtFixedRate(<span class="keyword">new</span> Runnable() &#123;</span><br><span class="line">    <span class="meta">@Override</span></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">void</span> <span class="title">run</span><span class="params">()</span> </span>&#123;</span><br><span class="line">        System.out.println(System.nanoTime());</span><br><span class="line">    &#125;</span><br><span class="line">&#125;, <span class="number">1000</span>, <span class="number">2000</span>, TimeUnit.MILLISECONDS);</span><br></pre></td></tr></table></figure>
+
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line">================</span><br><span class="line"><span class="number">233471023732097</span></span><br><span class="line"><span class="number">233473026158692</span></span><br><span class="line"><span class="number">233475023768285</span></span><br><span class="line">================</span><br><span class="line"><span class="number">233477030024240</span></span><br><span class="line"><span class="number">233479027432148</span></span><br><span class="line">================</span><br><span class="line"><span class="number">233481026928538</span></span><br><span class="line"><span class="number">233483025530535</span></span><br><span class="line"><span class="number">233485025312657</span></span><br><span class="line">================</span><br></pre></td></tr></table></figure>
+
+<p>可以看到，两个任务互不影响</p>
+<p>上面的代码建议大家亲自执行以下，会有更深的体会。</p>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/11/17/MySQL优化（一）之简单介绍/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -1434,321 +1824,6 @@
 
 
     
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/20/JS有特别的输出banana技巧/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="猫屎咖啡">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="猫屎咖啡">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/09/20/JS有特别的输出banana技巧/" itemprop="url">JS：我有特别的输出banana技巧</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-20T21:26:15+08:00">
-                2019-09-20
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>今天之前一个关系不错的同事发来一段很有意思的js代码，代码如下</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">(<span class="string">'b'</span> + <span class="string">'a'</span> + + <span class="string">'a'</span> + <span class="string">'a'</span>).toLowerCase()</span><br></pre></td></tr></table></figure>
-
-<p>这段代码的输出为<code>banana</code>。</p>
-<p>大家都知道js的一些语法和规则都比较怪异，这段代码也不例外，那为什么这段代码会输出这样的结果呢？<br>这就与JavaScript运算符优先级相关了，我们先了解一下这段代码涉及到的运算符及其优先级，如下：</p>
-<table>
-<thead>
-<tr>
-<th align="center">优先级</th>
-<th align="center">运算类型</th>
-<th align="center">关联性</th>
-<th align="center">运算符</th>
-</tr>
-</thead>
-<tbody><tr>
-<td align="center">20</td>
-<td align="center">圆括号</td>
-<td align="center">n/a</td>
-<td align="center">(…)</td>
-</tr>
-<tr>
-<td align="center">16</td>
-<td align="center">一元正号</td>
-<td align="center">从右至左</td>
-<td align="center">+ …</td>
-</tr>
-<tr>
-<td align="center">13</td>
-<td align="center">加法</td>
-<td align="center">从左至右</td>
-<td align="center">… + …</td>
-</tr>
-</tbody></table>
-<p>OK，了解了上面的运算符优先级之后，我们来分析一下上面那段代码。</p>
-<p>首先<code>(&#39;b&#39; + &#39;a&#39; + + &#39;a&#39; + &#39;a&#39;)</code> ，按照运算符优先级分解一下运算步骤，<br>从上面优先级的表格我们可以看到圆括号的优先级最高，其次是一元正号（有人可能不太明白什么是一元正号，这里解释一下一元正号 <code>+</code> ，大家都知道一元负号 <code>-</code> ，比如说一个正数 <code>2</code> 前面加上一元负号运算符，就会变成负数 <code>-2</code> ，那么加上一元正号呢？变为 <code>+2</code> ，其实还是正数 <code>2</code>。一元正号，其实就是我们初中学正负数时候的正数前面省略的 <code>+</code> ）</p>
-<p>此段代码中运算优先级最低的就是加法运算，所以按照运算符优先级，代码可以转换成这个样子</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'b'</span> + <span class="string">'a'</span> + (+ <span class="string">'a'</span>) + <span class="string">'a'</span> <span class="comment">//因为一元正号的优先级比加法高，所以用括号标注一下</span></span><br></pre></td></tr></table></figure>
-
-<p>那么就会先运算 <code>(+ &#39;a&#39;)</code></p>
-<p>我们来看一下一元正号的说明：</p>
-<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">一元正号运算符位于其操作数前面，计算其操作数的数值，如果操作数不是一个数值，会尝试将其转换成一个数值。 尽管一元负号也能转换非数值类型，但是一元正号是转换其他对象到数值的最快方法，也是最推荐的做法，因为它不会对数值执行任何多余操作。它可以将字符串转换成整数和浮点数形式，也可以转换非字符串值 true，false 和 null。小数和十六进制格式字符串也可以转换成数值。负数形式字符串也可以转换成数值（对于十六进制不适用）。如果它不能解析一个值，则计算结果为 NaN。</span><br></pre></td></tr></table></figure>
-
-<p>请注意看这段话：<code>如果操作数不是一个数值，会尝试将其转换成一个数值和如果它不能解析一个值，则计算结果为 NaN</code></p>
-<p>那么<code>(+ &#39;a&#39;)</code>就会是变成 <code>NaN</code>，然后又涉及到了隐式转化，加号在JavaScript规则里有一条是，当操作符有一个是字符串类型时，另一个也要转成字符串类型。也就是说 <code>NaN</code> 要进行<code>toString</code>，然后原代码执行过程如下:</p>
-<figure class="highlight javascript"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'b'</span> + <span class="string">'a'</span> + (+ <span class="string">'a'</span>) + <span class="string">'a'</span></span><br><span class="line"><span class="comment">// to</span></span><br><span class="line"><span class="string">'b'</span> + <span class="string">'a'</span> + <span class="built_in">Number</span>(<span class="string">'a'</span>) + <span class="string">'a'</span></span><br><span class="line"><span class="comment">// to</span></span><br><span class="line"><span class="string">'b'</span> + <span class="string">'a'</span> + <span class="literal">NaN</span> + <span class="string">'a'</span></span><br><span class="line"><span class="comment">//to</span></span><br><span class="line"><span class="string">'b'</span> + <span class="string">'a'</span> + <span class="string">'NaN'</span> + <span class="string">'a'</span></span><br></pre></td></tr></table></figure>
-
-<p>最终再调用 <code>toLowerCase()</code> 将其转换为小写，就变成了 <code>banana</code></p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
-      
-
-  
-
-  
-  
-  
-
-  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
-  
-  
-  
-  <div class="post-block">
-    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2019/09/08/递归算法及应用/">
-
-    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
-      <meta itemprop="name" content="猫屎咖啡">
-      <meta itemprop="description" content>
-      <meta itemprop="image" content="/images/avatar.gif">
-    </span>
-
-    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
-      <meta itemprop="name" content="猫屎咖啡">
-    </span>
-
-    
-      <header class="post-header">
-
-        
-        
-          <h1 class="post-title" itemprop="name headline">
-                
-                <a class="post-title-link" href="/2019/09/08/递归算法及应用/" itemprop="url">递归算法及应用</a></h1>
-        
-
-        <div class="post-meta">
-          <span class="post-time">
-            
-              <span class="post-meta-item-icon">
-                <i class="fa fa-calendar-o"></i>
-              </span>
-              
-                <span class="post-meta-item-text">发表于</span>
-              
-              <time title="创建于" itemprop="dateCreated datePublished" datetime="2019-09-08T14:55:10+08:00">
-                2019-09-08
-              </time>
-            
-
-            
-
-            
-          </span>
-
-          
-
-          
-            
-          
-
-          
-          
-
-          
-
-          
-
-          
-
-        </div>
-      </header>
-    
-
-    
-    
-    
-    <div class="post-body" itemprop="articleBody">
-
-      
-      
-
-      
-        
-          
-            <p>在上一篇讲二分查找的文章中我们提到了实现二分查找的一种方式，那就是使用递归算法。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//递归</span></span><br><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">recursionBinarySearch</span><span class="params">(<span class="keyword">int</span>[] arr,<span class="keyword">int</span> key,<span class="keyword">int</span> low,<span class="keyword">int</span> high)</span></span>&#123;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">if</span>(key &lt; arr[low] || key &gt; arr[high] || low &gt; high)&#123;</span><br><span class="line">            <span class="keyword">return</span> -<span class="number">1</span>;              </span><br><span class="line">        &#125;</span><br><span class="line">        </span><br><span class="line">        <span class="keyword">int</span> middle = (low + high) / <span class="number">2</span>;          <span class="comment">//初始中间位置</span></span><br><span class="line">        <span class="keyword">if</span>(arr[middle] &gt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字大则关键字在左区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,low,middle-<span class="number">1</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;</span><br><span class="line">            <span class="comment">//比关键字小则关键字在右区域</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,middle+<span class="number">1</span>,high);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;</span><br><span class="line">            <span class="keyword">return</span> middle;</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>根据二分查找的原理，当我们取得中间值<code>arr[middle]</code>大于想要查找的目标值<code>key</code>的时候，我们需要排除比<code>key</code>大的那一半数据，也就是<code>arr[middle]</code>之后的数据。在代码中我们可以看到，我们通过将<code>high</code>参数设置为<code>middle-1</code>来排除<code>middle</code>之后的数据。同时我们将<code>middle-1</code>当做新的<code>high</code>传入到函数中继续调用。也就是这个函数自己又继续调用了自己本身，只是改变了参数，将问题分解为原来的一半。然后在此函数中继续上面的步骤，改变参数<code>low</code>或者<code>high</code>，将<code>low</code>或者<code>high</code>的新值作为参数继续传给自己并调用自己，这就是递归。</p>
-<p>递归算法设计的基本思想是：对于一个复杂的问题，把原问题分解为若干个相对简单类同的子问题，继续下去直到子问题简单到能够直接求解，也就是说到了递归的出口，这样原问题就有递归得解。<br>例如上面二分查找(一个复杂的问题)，我们不断将查找范围减半（也就是把原问题分解为相对简单的子问题），直到查找范围就剩一个数（子问题简单到能够直接求解），我们就找到了递归的出口(也就是上述函数中的return middle)。</p>
-<p>举两个个生活中的例子来说明什么是递归</p>
-<ol>
-<li>递归就是洋葱，一个洋葱是带着一层洋葱皮的洋葱，拨开一层洋葱皮，里面还是洋葱，再剥开一层洋葱皮，里面···还是洋葱。（如果你愿意一层一层一层的剥开TA的心。。。）</li>
-<li>递归就是包子馅的包子，也就是你剥开包子皮，发现里面是一个新的包子。对这个包子取一个极限，你就会发现，这个包子就是一个馒头。。。</li>
-</ol>
-<p>上面说到，使用递归算法求解，需要找到递归的出口，很容易理解，若是没有出口，那么函数总是自己调用自己，永远也不会停下来，直到报出栈溢出(StackOverflowError)的异常。例如如下代码</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Test</span> </span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">main</span><span class="params">(String[] args)</span> </span>&#123;</span><br><span class="line">        test();        </span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">void</span> <span class="title">test</span><span class="params">()</span></span>&#123;</span><br><span class="line">        test();     <span class="comment">//自己调用自己   </span></span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>输出结果为：</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line">Exception in thread <span class="string">"main"</span> java.lang.StackOverflowError</span><br><span class="line">        at Test.test(Test.java:<span class="number">11</span>)</span><br><span class="line">        at Test.test(Test.java:<span class="number">11</span>)</span><br><span class="line">        at Test.test(Test.java:<span class="number">11</span>)</span><br><span class="line">        at Test.test(Test.java:<span class="number">11</span>)</span><br><span class="line">        at Test.test(Test.java:<span class="number">11</span>)</span><br><span class="line">        at Test.test(Test.java:<span class="number">11</span>)</span><br><span class="line">        at Test.test(Test.java:<span class="number">11</span>)</span><br><span class="line">        at Test.test(Test.java:<span class="number">11</span>)</span><br></pre></td></tr></table></figure>
-
-<p>拿上面包子馅的包子来举例，我们一层层的剥开包子皮，目的就是找到最里面的包子，但如果我们在递归算法中不设置出口条件，那么就会出现不管剥开多少次包子皮，都找不到最里面的包子的情况。然后你就会发现，这包子其实就是一个馒头。。</p>
-<p>所以在我们使用递归算法的时候，必须有一个明确的递归结束条件，称为<code>递归出口</code>，有的书上也称为<code>基线条件</code>。<br>每个递归函数都需要包含两部分，基线条件和递归条件。递归条件指的是函数调用自己，而基线条件指的是函数不再调用自己，从而避免无线循环。<br>例如上述二分查找中的基线条件与递归条件，</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br></pre></td><td class="code"><pre><span class="line">        <span class="keyword">if</span>(arr[middle] &gt; key)&#123;           <span class="comment">//递归条件</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,low,middle-<span class="number">1</span>);</span><br><span class="line">        &#125;<span class="keyword">else</span> <span class="keyword">if</span>(arr[middle] &lt; key)&#123;    <span class="comment">//递归条件</span></span><br><span class="line">            <span class="keyword">return</span> recursionBinarySearch(arr, key,middle+<span class="number">1</span>,high);</span><br><span class="line">        &#125;<span class="keyword">else</span> &#123;                         <span class="comment">//基线条件（递归出口）</span></span><br><span class="line">            <span class="keyword">return</span> middle;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>递归的应用有哪些呢？最经典的应用就是求斐波那契数列了。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> n)</span></span>&#123;  </span><br><span class="line">    <span class="keyword">if</span>(n == <span class="number">1</span> || n == <span class="number">2</span>)&#123;     <span class="comment">// 基线条件（递归出口）</span></span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> f(n-<span class="number">1</span>) + f(n-<span class="number">2</span>);    <span class="comment">//递归条件</span></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>当然斐波那契数列也可以用循环的方式来解决。</p>
-<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">int</span> <span class="title">f</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;  </span><br><span class="line">    <span class="keyword">int</span> f0 = <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">int</span> f1 = <span class="number">1</span>;  </span><br><span class="line">    <span class="keyword">int</span> f2 = <span class="number">0</span>;  </span><br><span class="line">  </span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>; i &lt; n; i++)&#123;  </span><br><span class="line">        f2 = f0 + f1;  </span><br><span class="line">        f0 = f1;  </span><br><span class="line">        f1 = f2;  </span><br><span class="line">    &#125;  </span><br><span class="line">    <span class="keyword">return</span> f2;  </span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
-
-<p>这两种方法的作用相同，结过相同，但在程序运行的性能上有很大差距。<br>使用递归的方式来求解斐波那契数列的时间复杂度为O(2<sup>n</sup>)，而使用循环的方式的时间复杂度为O(n)。可见递归只是让解决方案变得更清晰，并没有性能上的优势。实际上，在一些情况下，使用循环的性能更好。</p>
-<p>当然，递归的应用并不只是斐波那契数列求和，二叉树的遍历，排序算法中的排序，都可以用递归来实现。</p>
-<p>递归是一种非常优雅的问题解决方法（在不考虑程序性能的前提下），递归将人分为截然不同的阵营：恨它的、爱它的以及恨了几年后又爱上它的。</p>
-<p>最后分享一句话，Leigh Caldwell在Stack Overflow上说：“如果使用循环，程序的性能可能更高；如果使用递归，程序可能更容易理解。如何选择要看什么对你来说更重要。”</p>
-
-          
-        
-      
-    </div>
-    
-    
-    
-
-    
-
-    
-
-    
-
-    <footer class="post-footer">
-      
-
-      
-
-      
-
-      
-      
-        <div class="post-eof"></div>
-      
-    </footer>
-  </div>
-  
-  
-  
-  </article>
-
-
-    
   </section>
 
   
@@ -1799,7 +1874,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">12</span>
+                  <span class="site-state-item-count">14</span>
                   <span class="site-state-item-name">日志</span>
                 </a>
               </div>
