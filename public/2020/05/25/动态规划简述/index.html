@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta name="google-site-verification" content="nPoziOQzb5Lb3pPO9SGvdEUa54TVyk1_z_kbLwqQ7r0">
+  <meta name="baidu-site-verification" content="FAhxzOEgJW">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="最近总是碰到动态规划的问题，简单记录一下。 动态规划其实就是重叠子问题，将一个问题分解为若干个小问题求解的一种方式。就是先解决子问题，然后逐步解决原来的大问题。 举例来说明：  斐波那契数列  之前的文章有讲递归求解斐波那契数列，今天看一看动态规划怎么求解。 我们知道，斐波那契数列的每一个数，都是它之前两个数的和，也就是只和它之前的两个数有关系，假设斐波那契数列的第一个数我们定义为f(1)，第n个">
+<meta property="og:type" content="article">
+<meta property="og:title" content="动态规划简述">
+<meta property="og:url" content="http://yoursite.com/2020/05/25/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%AE%80%E8%BF%B0/index.html">
+<meta property="og:site_name" content="猫屎咖啡">
+<meta property="og:description" content="最近总是碰到动态规划的问题，简单记录一下。 动态规划其实就是重叠子问题，将一个问题分解为若干个小问题求解的一种方式。就是先解决子问题，然后逐步解决原来的大问题。 举例来说明：  斐波那契数列  之前的文章有讲递归求解斐波那契数列，今天看一看动态规划怎么求解。 我们知道，斐波那契数列的每一个数，都是它之前两个数的和，也就是只和它之前的两个数有关系，假设斐波那契数列的第一个数我们定义为f(1)，第n个">
+<meta property="article:published_time" content="2020-05-25T10:58:51.000Z">
+<meta property="article:modified_time" content="2020-05-25T11:56:37.604Z">
+<meta property="article:author" content="猫屎咖啡">
+<meta property="article:tag" content="算法">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/05/25/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%AE%80%E8%BF%B0/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>动态规划简述 | 猫屎咖啡</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">猫屎咖啡</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/05/25/%E5%8A%A8%E6%80%81%E8%A7%84%E5%88%92%E7%AE%80%E8%BF%B0/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="猫屎咖啡">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="猫屎咖啡">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          动态规划简述
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+              
+
+              <time title="Created: 2020-05-25 18:58:51 / Modified: 19:56:37" itemprop="dateCreated datePublished" datetime="2020-05-25T18:58:51+08:00">2020-05-25</time>
+            </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>最近总是碰到动态规划的问题，简单记录一下。</p>
+<p>动态规划其实就是重叠子问题，将一个问题分解为若干个小问题求解的一种方式。就是先解决子问题，然后逐步解决原来的大问题。</p>
+<p>举例来说明：</p>
+<ol>
+<li>斐波那契数列</li>
+</ol>
+<p>之前的文章有讲递归求解斐波那契数列，今天看一看动态规划怎么求解。</p>
+<p>我们知道，斐波那契数列的每一个数，都是它之前两个数的和，也就是只和它之前的两个数有关系，假设斐波那契数列的第一个数我们定义为<code>f(1)</code>，第n个数定义为<code>f(n)</code>。</p>
+<p>我们写一下这个问题的状态转移方程，然后找一下问题的递归出口，然后就可以按照这个方程来编写代码了。</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line">f(n) &#x3D; 1                n&#x3D;1 or n&#x3D;2 </span><br><span class="line">f(n) &#x3D; f(n-1) + f(n-2)  n &gt; 2</span><br></pre></td></tr></table></figure>
+
+<p>代码如下：</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">fib</span><span class="params">(<span class="keyword">int</span> n)</span></span>&#123;</span><br><span class="line">    <span class="keyword">int</span> [] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n+<span class="number">1</span>]; <span class="comment">//定义一个数组，用来记录小问题求解的每一步结果，为了方便，dp[0]不存放数据</span></span><br><span class="line"></span><br><span class="line">    <span class="comment">// 按照状态转移方程来编写的代码</span></span><br><span class="line">    <span class="keyword">if</span>(n == <span class="number">1</span> || n == <span class="number">2</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    dp[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">    dp[<span class="number">2</span>] = <span class="number">1</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">3</span>; i &lt; n+<span class="number">1</span>; i++)&#123;</span><br><span class="line">        dp[i] = dp[i-<span class="number">1</span>] + dp[i-<span class="number">2</span>]; <span class="comment">//状态转移方程</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> dp[n];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ol start="2">
+<li>台阶问题</li>
+</ol>
+<p>有一座高度是n级台阶的楼梯，从下往上走，每跨一步只能向上1级或者2级台阶。要求用程序来求出一共有多少种走法。</p>
+<p>我们假设f(n)代表走到第n级台阶一共的走法，根据题目描述我们知道，一次只能走一级或者两级，我们直接看走到第n级台阶，这一步可能是从第n-1级台阶走了一级上去的，也可能是从第n-2级台阶走了两级上去的。这个问题就可以转换成来求解f(n-1)和f(n-2)。我们写一下这个问题的状态转移方程：</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line">f(n) &#x3D; f(n-1) + f(n-2)  n &gt; 2</span><br><span class="line">f(n) &#x3D; 1                n &#x3D; 1</span><br><span class="line">f(n) &#x3D; 2                n &#x3D; 2</span><br></pre></td></tr></table></figure>
+
+<p>同样，有状态转移方程，也知道了递归出口，这个问题也可以用递归的方式来实现</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">climb</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> climb(n - <span class="number">1</span>) + climb(n - <span class="number">2</span>); <span class="comment">//状态转移方程</span></span><br><span class="line"></span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>讲递归的时候，我们已经知道，递归的性能不好，函数堆栈比较深，时间复杂度很高，我们可以使用动态规划的另一种方式，备忘录方式。</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">climb2</span><span class="params">(<span class="keyword">int</span> n)</span> </span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n &lt; <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">0</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">1</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">2</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> <span class="number">2</span>;</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">int</span> [] dp = <span class="keyword">new</span> <span class="keyword">int</span>[n+<span class="number">1</span>]; <span class="comment">//同样，定义一个数组，用来记录小问题求解的每一步结果，为了方便，dp[0]不存放数据</span></span><br><span class="line">    dp[<span class="number">1</span>] = <span class="number">1</span>;</span><br><span class="line">    dp[<span class="number">2</span>] = <span class="number">2</span>;</span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">3</span>; i &lt; n+<span class="number">1</span>; i++)&#123;</span><br><span class="line">        dp[i] = dp[i-<span class="number">1</span>] + dp[i-<span class="number">2</span>]; <span class="comment">//状态转移方程</span></span><br><span class="line">    &#125;</span><br><span class="line">    <span class="keyword">return</span> dp[n];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<p>看完这两个简单的问题，相信大家对动态规划也有了一定的了解，其实就是分解问题，找问题的递归出口，推导状态转移方程，然后按照状态转移方程来编写代码就可以了。</p>
+<p>我们来看一个进阶一点的动态规划题目，下面是题目描述</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">有一排石碓，每碓石头的数量不一样，想办法石碓中拿到最多的石头，不能拿相邻的石头，例：</span><br><span class="line"></span><br><span class="line">nums : [1 4 9 34 2 3]&#x3D; 41</span><br><span class="line">nums : [1 8 1 1 8 1]&#x3D; 16</span><br></pre></td></tr></table></figure>
+
+<p>还是，来找递归出口以及状态转移方程</p>
+<p>假设f(6)的含义为，到数组下标为6，能拿到的最多的石头数，也就是到数组下标为6，此问题的最佳解决方案，f(5)代表到数组下标为5，最佳方案是什么。</p>
+<p>详细说明一下</p>
+<p>下标为6这个位置的数字，有两种方案，选&amp;不选。</p>
+<p>假设我们在拿石头的时候选了下标为6的数字，那么方程就可以这么写</p>
+<p>f(6) = f(4) + arr[6]</p>
+<p>如果不选呢</p>
+<p>f(6) = f(5)</p>
+<p>那么f(6)的最佳方案就是max(f(4) + arr[6],f(5))</p>
+<p>来写一下状态转移方程</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br></pre></td><td class="code"><pre><span class="line">f(n) &#x3D; f(n-2) + arr[n]  选n</span><br><span class="line">f(n) &#x3D; f(n-1)       不选n</span><br><span class="line">f(0) &#x3D; arr[0]</span><br><span class="line">f(1) &#x3D; max(arr[0],arr[1])</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>递归求解</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">RecOpt</span><span class="params">(<span class="keyword">int</span> [] nums, <span class="keyword">int</span> n)</span></span>&#123;</span><br><span class="line">    <span class="keyword">if</span> (n == <span class="number">0</span>)&#123;</span><br><span class="line">        <span class="keyword">return</span> nums[<span class="number">0</span>];</span><br><span class="line">    &#125; <span class="keyword">else</span> <span class="keyword">if</span> (n == <span class="number">1</span>) &#123;</span><br><span class="line">        <span class="keyword">return</span> Math.max(nums[<span class="number">0</span>],nums[<span class="number">1</span>]);</span><br><span class="line">    &#125; <span class="keyword">else</span> &#123;</span><br><span class="line">        <span class="comment">//状态转移方程</span></span><br><span class="line">        <span class="keyword">int</span> a = RecOpt(nums,n-<span class="number">2</span>) + nums[n];</span><br><span class="line">        <span class="keyword">int</span> b = RecOpt(nums,n-<span class="number">1</span>);</span><br><span class="line">        <span class="keyword">return</span> Math.max(a,b);</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+
+<ul>
+<li>备忘录求解</li>
+</ul>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="function"><span class="keyword">public</span> <span class="keyword">static</span> <span class="keyword">int</span> <span class="title">DpOpt</span><span class="params">(<span class="keyword">int</span> [] nums)</span></span>&#123;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">int</span> [] opt = <span class="keyword">new</span> <span class="keyword">int</span>[nums.length];</span><br><span class="line">    opt[<span class="number">0</span>] = nums[<span class="number">0</span>];</span><br><span class="line">    opt[<span class="number">1</span>] = Math.max(nums[<span class="number">0</span>],nums[<span class="number">1</span>]);</span><br><span class="line"></span><br><span class="line">    <span class="comment">//状态转移方程</span></span><br><span class="line">    <span class="keyword">for</span>(<span class="keyword">int</span> i = <span class="number">2</span>;i&lt;nums.length;i++)&#123;</span><br><span class="line">        <span class="keyword">int</span> a = opt[i-<span class="number">2</span>] + nums[i];</span><br><span class="line">        <span class="keyword">int</span> b = opt[i-<span class="number">1</span>];</span><br><span class="line">        opt[i] = Math.max(a,b);</span><br><span class="line">    &#125;</span><br><span class="line"></span><br><span class="line">    <span class="keyword">return</span> opt[nums.length - <span class="number">1</span>];</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E7%AE%97%E6%B3%95/" rel="tag"># 算法</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/05/20/Java%E5%A6%82%E4%BD%95%E5%BF%AB%E9%80%9F%E8%AF%BB%E5%8F%96%E5%A4%A7%E6%96%87%E4%BB%B6/" rel="prev" title="Java如何快速读取大文件">
+      <i class="fa fa-chevron-left"></i> Java如何快速读取大文件
+    </a></div>
+      <div class="post-nav-item"></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">猫屎咖啡</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SheldonKubor" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SheldonKubor" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:mjh123877@163.com" title="E-Mail → mailto:mjh123877@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">猫屎咖啡</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var canonicalURL, curProtocol;
+      //Get the <link> tag
+      var x=document.getElementsByTagName("link");
+		//Find the last canonical URL
+		if(x.length > 0){
+			for (i=0;i<x.length;i++){
+				if(x[i].rel.toLowerCase() == 'canonical' && x[i].href){
+					canonicalURL=x[i].href;
+				}
+			}
+		}
+    //Get protocol
+	    if (!canonicalURL){
+	    	curProtocol = window.location.protocol.split(':')[0];
+	    }
+	    else{
+	    	curProtocol = canonicalURL.split(':')[0];
+	    }
+      //Get current URL if the canonical URL does not exist
+	    if (!canonicalURL) canonicalURL = window.location.href;
+	    //Assign script content. Replace current URL with the canonical URL
+      !function(){var e=/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi,r=canonicalURL,t=document.referrer;if(!e.test(r)){var n=(String(curProtocol).toLowerCase() === 'https')?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";t?(n+="?r="+encodeURIComponent(document.referrer),r&&(n+="&l="+r)):r&&(n+="?l="+r);var i=new Image;i.src=n}}(window);})();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>

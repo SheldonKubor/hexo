@@ -147,9 +147,9 @@ social_icons:
 links_icon: link
 links_title: Links
 links_layout: block
-#links_layout: inline
-#links:
-  #Title: http://example.com/
+  #links_layout: inline
+  #links:
+#Title: http://example.com/
 
 # Sidebar Avatar
 # in theme directory(source/images): /images/avatar.gif
@@ -414,18 +414,18 @@ gitment:
   proxy_gateway: # Address of api proxy, See: https://github.com/aimingoo/intersect
   redirect_protocol: # Protocol of redirect_uri with force_redirect_protocol when mint enabled
 
-# Baidu Share
-# Available value:
-#    button | slide
-# Warning: Baidu Share does not support https.
-#baidushare:
-##  type: button
+  # Baidu Share
+  # Available value:
+  #    button | slide
+  # Warning: Baidu Share does not support https.
+  #baidushare:
+  ##  type: button
 
-# Share
-# This plugin is more useful in China, make sure you known how to use it.
-# And you can find the use guide at official webiste: http://www.jiathis.com/.
-# Warning: JiaThis does not support https.
-#jiathis:
+  # Share
+  # This plugin is more useful in China, make sure you known how to use it.
+  # And you can find the use guide at official webiste: http://www.jiathis.com/.
+  # Warning: JiaThis does not support https.
+  #jiathis:
   ##uid: Get this uid from http://www.jiathis.com/
 #add_this_id:
 

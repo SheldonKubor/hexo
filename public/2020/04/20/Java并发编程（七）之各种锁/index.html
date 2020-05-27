@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="zh-Hans">
+<head>
+  <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=2">
+<meta name="theme-color" content="#222">
+<meta name="generator" content="Hexo 4.2.0">
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png">
+  <link rel="mask-icon" href="/images/logo.svg" color="#222">
+  <meta name="google-site-verification" content="nPoziOQzb5Lb3pPO9SGvdEUa54TVyk1_z_kbLwqQ7r0">
+  <meta name="baidu-site-verification" content="FAhxzOEgJW">
+
+<link rel="stylesheet" href="/css/main.css">
+
+
+<link rel="stylesheet" href="/lib/font-awesome/css/all.min.css">
+
+<script id="hexo-configurations">
+    var NexT = window.NexT || {};
+    var CONFIG = {"hostname":"yoursite.com","root":"/","scheme":"Gemini","version":"7.8.0","exturl":false,"sidebar":{"position":"left","display":"post","padding":18,"offset":12,"onmobile":false},"copycode":{"enable":false,"show_result":false,"style":null},"back2top":{"enable":true,"sidebar":false,"scrollpercent":false},"bookmark":{"enable":false,"color":"#222","save":"auto"},"fancybox":false,"mediumzoom":false,"lazyload":false,"pangu":false,"comments":{"style":"tabs","active":null,"storage":true,"lazyload":false,"nav":null},"algolia":{"hits":{"per_page":10},"labels":{"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}},"localsearch":{"enable":false,"trigger":"auto","top_n_per_article":1,"unescape":false,"preload":false},"motion":{"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}}};
+  </script>
+
+  <meta name="description" content="我们已经知道了在线程同步问题上，我们可以通过使用synchronized加锁来保证线程安全。简单介绍一下各种锁的概念以及含义。 1. 乐观锁与悲观锁乐观锁和悲观锁是在数据库中引入的名词，但是在并发包锁里面也引入了类似的思想（计算机科学中很多思想都是类似的），所以也简单了解一下。  乐观锁  乐观锁不是数据库自带的，需要我们自己去实现。乐观锁是指操作数据库时(更新操作)，想法很乐观，认为这次的操作不">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Java并发编程（七）之各种锁">
+<meta property="og:url" content="http://yoursite.com/2020/04/20/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%EF%BC%88%E4%B8%83%EF%BC%89%E4%B9%8B%E5%90%84%E7%A7%8D%E9%94%81/index.html">
+<meta property="og:site_name" content="猫屎咖啡">
+<meta property="og:description" content="我们已经知道了在线程同步问题上，我们可以通过使用synchronized加锁来保证线程安全。简单介绍一下各种锁的概念以及含义。 1. 乐观锁与悲观锁乐观锁和悲观锁是在数据库中引入的名词，但是在并发包锁里面也引入了类似的思想（计算机科学中很多思想都是类似的），所以也简单了解一下。  乐观锁  乐观锁不是数据库自带的，需要我们自己去实现。乐观锁是指操作数据库时(更新操作)，想法很乐观，认为这次的操作不">
+<meta property="article:published_time" content="2020-04-20T07:31:36.000Z">
+<meta property="article:modified_time" content="2020-04-22T02:06:35.302Z">
+<meta property="article:author" content="猫屎咖啡">
+<meta property="article:tag" content="多线程">
+<meta property="article:tag" content="并发">
+<meta property="article:tag" content="Java">
+<meta name="twitter:card" content="summary">
+
+<link rel="canonical" href="http://yoursite.com/2020/04/20/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%EF%BC%88%E4%B8%83%EF%BC%89%E4%B9%8B%E5%90%84%E7%A7%8D%E9%94%81/">
+
+
+<script id="page-configurations">
+  // https://hexo.io/docs/variables.html
+  CONFIG.page = {
+    sidebar: "",
+    isHome : false,
+    isPost : true,
+    lang   : 'zh-Hans'
+  };
+</script>
+
+  <title>Java并发编程（七）之各种锁 | 猫屎咖啡</title>
+  
+
+
+
+
+
+
+  <noscript>
+  <style>
+  .use-motion .brand,
+  .use-motion .menu-item,
+  .sidebar-inner,
+  .use-motion .post-block,
+  .use-motion .pagination,
+  .use-motion .comments,
+  .use-motion .post-header,
+  .use-motion .post-body,
+  .use-motion .collection-header { opacity: initial; }
+
+  .use-motion .site-title,
+  .use-motion .site-subtitle {
+    opacity: initial;
+    top: initial;
+  }
+
+  .use-motion .logo-line-before i { left: initial; }
+  .use-motion .logo-line-after i { right: initial; }
+  </style>
+</noscript>
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage">
+  <div class="container use-motion">
+    <div class="headband"></div>
+
+    <header class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-container">
+  <div class="site-nav-toggle">
+    <div class="toggle" aria-label="Toggle navigation bar">
+      <span class="toggle-line toggle-line-first"></span>
+      <span class="toggle-line toggle-line-middle"></span>
+      <span class="toggle-line toggle-line-last"></span>
+    </div>
+  </div>
+
+  <div class="site-meta">
+
+    <a href="/" class="brand" rel="start">
+      <span class="logo-line-before"><i></i></span>
+      <h1 class="site-title">猫屎咖啡</h1>
+      <span class="logo-line-after"><i></i></span>
+    </a>
+  </div>
+
+  <div class="site-nav-right">
+    <div class="toggle popup-trigger">
+    </div>
+  </div>
+</div>
+
+
+
+
+<nav class="site-nav">
+  <ul id="menu" class="main-menu menu">
+        <li class="menu-item menu-item-home">
+
+    <a href="/" rel="section"><i class="fa fa-home fa-fw"></i>Home</a>
+
+  </li>
+        <li class="menu-item menu-item-tags">
+
+    <a href="/tags/" rel="section"><i class="fa fa-tags fa-fw"></i>Tags</a>
+
+  </li>
+        <li class="menu-item menu-item-categories">
+
+    <a href="/categories/" rel="section"><i class="fa fa-th fa-fw"></i>Categories</a>
+
+  </li>
+        <li class="menu-item menu-item-archives">
+
+    <a href="/archives/" rel="section"><i class="fa fa-archive fa-fw"></i>Archives</a>
+
+  </li>
+  </ul>
+</nav>
+
+
+
+
+</div>
+    </header>
+
+    
+  <div class="back-to-top">
+    <i class="fa fa-arrow-up"></i>
+    <span>0%</span>
+  </div>
+
+
+    <main class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          
+
+          <div class="content post posts-expand">
+            
+
+    
+  
+  
+  <article itemscope itemtype="http://schema.org/Article" class="post-block" lang="zh-Hans">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2020/04/20/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%EF%BC%88%E4%B8%83%EF%BC%89%E4%B9%8B%E5%90%84%E7%A7%8D%E9%94%81/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="image" content="/images/avatar.gif">
+      <meta itemprop="name" content="猫屎咖啡">
+      <meta itemprop="description" content="">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="猫屎咖啡">
+    </span>
+      <header class="post-header">
+        <h1 class="post-title" itemprop="name headline">
+          Java并发编程（七）之各种锁
+        </h1>
+
+        <div class="post-meta">
+            <span class="post-meta-item">
+              <span class="post-meta-item-icon">
+                <i class="far fa-calendar"></i>
+              </span>
+              <span class="post-meta-item-text">Posted on</span>
+
+              <time title="Created: 2020-04-20 15:31:36" itemprop="dateCreated datePublished" datetime="2020-04-20T15:31:36+08:00">2020-04-20</time>
+            </span>
+              <span class="post-meta-item">
+                <span class="post-meta-item-icon">
+                  <i class="far fa-calendar-check"></i>
+                </span>
+                <span class="post-meta-item-text">Edited on</span>
+                <time title="Modified: 2020-04-22 10:06:35" itemprop="dateModified" datetime="2020-04-22T10:06:35+08:00">2020-04-22</time>
+              </span>
+
+          
+
+        </div>
+      </header>
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+        <p>我们已经知道了在线程同步问题上，我们可以通过使用<code>synchronized</code>加锁来保证线程安全。简单介绍一下各种锁的概念以及含义。</p>
+<h3 id="1-乐观锁与悲观锁"><a href="#1-乐观锁与悲观锁" class="headerlink" title="1. 乐观锁与悲观锁"></a>1. 乐观锁与悲观锁</h3><p>乐观锁和悲观锁是在数据库中引入的名词，但是在并发包锁里面也引入了类似的思想（计算机科学中很多思想都是类似的），所以也简单了解一下。</p>
+<ul>
+<li>乐观锁</li>
+</ul>
+<p>乐观锁不是数据库自带的，需要我们自己去实现。乐观锁是指操作数据库时(更新操作)，想法很乐观，认为这次的操作不会导致冲突，在操作数据时，并不进行任何其他的特殊处理（也就是不加锁），而在进行更新后，再去判断是否有冲突了。</p>
+<p>通常实现是这样的：在表中的数据进行操作时(更新)，先给数据表加一个版本(version)字段，每操作一次，将那条记录的版本号加1。也就是先查询出那条记录，获取出version字段,如果要对那条记录进行操作(更新),则先判断此刻version的值是否与刚刚查询出来时的version的值相等，如果相等，则说明这段期间，没有其他程序对其进行操作，则可以执行更新，将version字段的值加1；如果更新时发现此刻的version值与刚刚获取出来的version的值不相等，则说明这段期间已经有其他程序对其进行操作了，则不进行更新操作。</p>
+<ul>
+<li>悲观锁</li>
+</ul>
+<p>与乐观锁相对应的就是悲观锁了。悲观锁就是在操作数据时，认为此操作会出现数据冲突，所以在进行每次操作时都要通过获取锁才能进行对相同数据的操作，这点跟java中的synchronized很相似，所以悲观锁需要耗费较多的时间。另外与乐观锁相对应的，悲观锁是由数据库自己实现了的，要用的时候，我们直接调用数据库的相关语句就可以了</p>
+<p>悲观锁又分为共享锁与排它锁</p>
+<pre><code>1. 共享锁
+共享锁指的就是对于多个不同的事务，对同一个资源共享同一个锁。相当于对于同一把门，它拥有多个钥匙一样，这个就是所谓的共享锁。
+刚刚说了，对于悲观锁，一般数据库已经实现了，共享锁也属于悲观锁的一种，那么共享锁在mysql中是通过什么命令来调用呢。通过查询资料，了解到通过在执行语句后面加上lock in share mode就代表对某些资源加上共享锁了。
+
+2. 排它锁
+排它锁与共享锁相对应，就是指对于多个不同的事务，对同一个资源只能有一把锁。与共享锁类似，在需要执行的语句后面加上for update就可以了</code></pre><h3 id="2-公平锁与非公平锁"><a href="#2-公平锁与非公平锁" class="headerlink" title="2. 公平锁与非公平锁"></a>2. 公平锁与非公平锁</h3><p>公平锁表示线程获取锁的顺序是按照线程请求锁的时间早晚来决定的，也就是最早请求锁的线程将最早获取到锁。而非公平锁不一定先到先得。</p>
+<p>Java中<code>ReentrantLock</code>提供了公平和非公平锁的实现。</p>
+<ul>
+<li>公平锁 : <code>ReentrantLock lock = new ReentrantLock(true)</code></li>
+<li>非公平锁 : <code>ReentrantLock lock = new ReentrantLock(false)</code></li>
+</ul>
+<p><code>注：</code>如果构造函数不传递参数，则默认是非公平锁。</p>
+<p>简单举个例子解释一下：</p>
+<p>加入线程A已经持有了锁，这时候线程B请求该锁时将会被挂起。当线程A释放锁之后，假设有一个线程C也需要获取该锁，如果采用非公平锁的方式，根据线程调度策略，线程B与线程C两者之一可能获取到锁；而如果使用公平锁，则需要把C挂起，让B先获取当前锁（先到先得）。</p>
+<p>需要注意的是，在没有公平性需求的前提下，尽量使用非公平锁，因为公平锁会带来性能开销（很容易理解，公平锁需要一些其他操作来实现先到先得的公平性）。</p>
+<h3 id="3-独占锁（排它锁）与共享锁"><a href="#3-独占锁（排它锁）与共享锁" class="headerlink" title="3. 独占锁（排它锁）与共享锁"></a>3. 独占锁（排它锁）与共享锁</h3><p>与上面数据库中的锁定义类似。</p>
+<ul>
+<li><p>独占锁<br>任何时候只有一个线程能得到锁，<code>ReentrantLock</code>就是以独占的方式实现的。由于每次访问共享资源都会先加上锁，限制了并发性。独占锁只允许在同一时间，由一个线程来进行读写操作，其他线程不能必须等待当前线程释放锁，才能进行读取操作。</p>
+</li>
+<li><p>共享锁<br>可以同时由多个线程持有，例如<code>ReadWriteLock</code>读写锁。它允许一个共享资源被多个线程同时进行<code>读</code>操作。</p>
+</li>
+</ul>
+<h3 id="4-可重入锁"><a href="#4-可重入锁" class="headerlink" title="4. 可重入锁"></a>4. 可重入锁</h3><p>当一个线程要获取被另一个线程持有的独占锁的时候，将会被阻塞，那么该线程获取它自己已经获取的锁会不会被阻塞呢？如果不被阻塞，我们就说该锁是可以虫儿不的。</p>
+<p>我们来看一个例子</p>
+<figure class="highlight java"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">public</span> <span class="class"><span class="keyword">class</span> <span class="title">Hello</span></span>&#123;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">helloA</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"hello a"</span>);</span><br><span class="line">    &#125;</span><br><span class="line">    <span class="function"><span class="keyword">public</span> <span class="keyword">synchronized</span> <span class="keyword">void</span> <span class="title">helloB</span><span class="params">()</span></span>&#123;</span><br><span class="line">        System.out.println(<span class="string">"hello b"</span>);</span><br><span class="line">        helloA();</span><br><span class="line">    &#125;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>可以看到，两个方法<code>helloA</code>与<code>helloB</code>，都被<code>synchronized</code>修饰了，也就是都加了锁。我们知道对于普通同步方法，锁是当前实例对象，两个方法的锁是同一把锁，都是<code>this</code>。</p>
+<p>在调用<code>helloB</code>方法的时候，会先获取到锁，然后打印输出<code>hello b</code>，然后再调用<code>helloA</code>方法，由于<code>helloA</code>方法也是加了锁的，所以需要再次获取一次该锁，若是该锁是不可重入的，那么调用线程将会被阻塞，<code>helloB</code>方法将会被阻塞。但是实际上，<code>synchronized</code>锁时可重入锁。其原理是，在锁内部维护一个标识，代表当前锁被哪个线程占用，然后会关联一个计数器（也就是上一篇中提到的monitor的进入数），一开始计数器为0，任何线程都可以获取该锁，当一个线程获取到锁之后（monitorenter指令），计数器的值加1，其他线程获取该锁的时候，会先判断锁的所有者是不是自己，若不是自己，该线程就会被阻塞。若是自己，就会把计数器的值加1，释放锁后计数器的值会减1（monitorexit指令），当计数器的值又变回0的时候，锁里面的线程标识会被重置为<code>null</code>，这时候被阻塞的线程，就会被唤醒来竞争获取该锁。</p>
+<h3 id="5-自旋锁"><a href="#5-自旋锁" class="headerlink" title="5. 自旋锁"></a>5. 自旋锁</h3><p>Java中的线程是与操作系统中的线程一一对应的，当一个线程获取锁失败后，会切换到操作系统内核态挂起，当该线程获取到锁时，又需要将其切换到内核态唤醒。我们知道，操作系统从用户态切换到内核态是很耗性能的。而自旋锁在一定程度上避免了用户态与内核态之间的切换，自旋锁是当线程在获取锁的时候，如果该锁已被其他线程占有，当前线程不会马上切换到内核态阻塞自己，而是在不放弃CPU使用权的情况下，多次尝试获取该锁（默认次数是10，可以使用-XX：PreBlockSpinsh参数设置该值），在后面几次尝试中，其他线程可能已经释放了该锁。如果尝试指定次数后仍没有获取到锁，线程才会切换到内核态阻塞挂起自己。</p>
+<p>由此看来，自旋锁换区线程阻塞调度的开销，是使用了CPU的时间，缺点就是，有可能这些CPU的时间被白白浪费了。</p>
+
+    </div>
+
+    
+    
+    
+
+      <footer class="post-footer">
+          <div class="post-tags">
+              <a href="/tags/%E5%A4%9A%E7%BA%BF%E7%A8%8B/" rel="tag"># 多线程</a>
+              <a href="/tags/%E5%B9%B6%E5%8F%91/" rel="tag"># 并发</a>
+              <a href="/tags/Java/" rel="tag"># Java</a>
+          </div>
+
+        
+
+
+        
+    <div class="post-nav">
+      <div class="post-nav-item">
+    <a href="/2020/04/20/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%EF%BC%88%E5%85%AD%EF%BC%89%E4%B9%8Bsynchronized%E4%B8%8Evolatile%E5%85%B3%E9%94%AE%E5%AD%97/" rel="prev" title="Java并发编程（六）之synchronized关键字原理">
+      <i class="fa fa-chevron-left"></i> Java并发编程（六）之synchronized关键字原理
+    </a></div>
+      <div class="post-nav-item">
+    <a href="/2020/04/22/Java%E5%B9%B6%E5%8F%91%E7%BC%96%E7%A8%8B%EF%BC%88%E5%85%AB%EF%BC%89%E4%B9%8BCAS%E6%93%8D%E4%BD%9C/" rel="next" title="Java并发编程（八）之CAS操作">
+      Java并发编程（八）之CAS操作 <i class="fa fa-chevron-right"></i>
+    </a></div>
+    </div>
+      </footer>
+    
+  </article>
+  
+  
+  
+
+
+
+          </div>
+          
+
+<script>
+  window.addEventListener('tabs:register', () => {
+    let { activeClass } = CONFIG.comments;
+    if (CONFIG.comments.storage) {
+      activeClass = localStorage.getItem('comments_active') || activeClass;
+    }
+    if (activeClass) {
+      let activeTab = document.querySelector(`a[href="#comment-${activeClass}"]`);
+      if (activeTab) {
+        activeTab.click();
+      }
+    }
+  });
+  if (CONFIG.comments.storage) {
+    window.addEventListener('tabs:click', event => {
+      if (!event.target.matches('.tabs-comment .tab-content .tab-pane')) return;
+      let commentClass = event.target.classList[1];
+      localStorage.setItem('comments_active', commentClass);
+    });
+  }
+</script>
+
+        </div>
+          
+  
+  <div class="toggle sidebar-toggle">
+    <span class="toggle-line toggle-line-first"></span>
+    <span class="toggle-line toggle-line-middle"></span>
+    <span class="toggle-line toggle-line-last"></span>
+  </div>
+
+  <aside class="sidebar">
+    <div class="sidebar-inner">
+
+      <ul class="sidebar-nav motion-element">
+        <li class="sidebar-nav-toc">
+          Table of Contents
+        </li>
+        <li class="sidebar-nav-overview">
+          Overview
+        </li>
+      </ul>
+
+      <!--noindex-->
+      <div class="post-toc-wrap sidebar-panel">
+          <div class="post-toc motion-element"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#1-乐观锁与悲观锁"><span class="nav-number">1.</span> <span class="nav-text">1. 乐观锁与悲观锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#2-公平锁与非公平锁"><span class="nav-number">2.</span> <span class="nav-text">2. 公平锁与非公平锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#3-独占锁（排它锁）与共享锁"><span class="nav-number">3.</span> <span class="nav-text">3. 独占锁（排它锁）与共享锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#4-可重入锁"><span class="nav-number">4.</span> <span class="nav-text">4. 可重入锁</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#5-自旋锁"><span class="nav-number">5.</span> <span class="nav-text">5. 自旋锁</span></a></li></ol></div>
+      </div>
+      <!--/noindex-->
+
+      <div class="site-overview-wrap sidebar-panel">
+        <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+  <p class="site-author-name" itemprop="name">猫屎咖啡</p>
+  <div class="site-description" itemprop="description"></div>
+</div>
+<div class="site-state-wrap motion-element">
+  <nav class="site-state">
+      <div class="site-state-item site-state-posts">
+          <a href="/archives/">
+        
+          <span class="site-state-item-count">22</span>
+          <span class="site-state-item-name">posts</span>
+        </a>
+      </div>
+      <div class="site-state-item site-state-tags">
+            <a href="/tags/">
+          
+        <span class="site-state-item-count">18</span>
+        <span class="site-state-item-name">tags</span></a>
+      </div>
+  </nav>
+</div>
+  <div class="links-of-author motion-element">
+      <span class="links-of-author-item">
+        <a href="https://github.com/SheldonKubor" title="GitHub → https:&#x2F;&#x2F;github.com&#x2F;SheldonKubor" rel="noopener" target="_blank"><i class="github fa-fw"></i>GitHub</a>
+      </span>
+      <span class="links-of-author-item">
+        <a href="mailto:mjh123877@163.com" title="E-Mail → mailto:mjh123877@163.com" rel="noopener" target="_blank"><i class="envelope fa-fw"></i>E-Mail</a>
+      </span>
+  </div>
+
+
+
+      </div>
+
+    </div>
+  </aside>
+  <div id="sidebar-dimmer"></div>
+
+
+      </div>
+    </main>
+
+    <footer class="footer">
+      <div class="footer-inner">
+        
+
+        
+
+<div class="copyright">
+  
+  &copy; 
+  <span itemprop="copyrightYear">2020</span>
+  <span class="with-love">
+    <i class="fa fa-heart"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">猫屎咖啡</span>
+</div>
+  <div class="powered-by">Powered by <a href="https://hexo.io/" class="theme-link" rel="noopener" target="_blank">Hexo</a> & <a href="https://theme-next.org/" class="theme-link" rel="noopener" target="_blank">NexT.Gemini</a>
+  </div>
+
+        
+
+
+
+
+
+
+
+
+      </div>
+    </footer>
+  </div>
+
+  
+  <script src="/lib/anime.min.js"></script>
+  <script src="/lib/velocity/velocity.min.js"></script>
+  <script src="/lib/velocity/velocity.ui.min.js"></script>
+
+<script src="/js/utils.js"></script>
+
+<script src="/js/motion.js"></script>
+
+
+<script src="/js/schemes/pisces.js"></script>
+
+
+<script src="/js/next-boot.js"></script>
+
+
+
+
+  
+  <script>
+    (function(){
+      var canonicalURL, curProtocol;
+      //Get the <link> tag
+      var x=document.getElementsByTagName("link");
+		//Find the last canonical URL
+		if(x.length > 0){
+			for (i=0;i<x.length;i++){
+				if(x[i].rel.toLowerCase() == 'canonical' && x[i].href){
+					canonicalURL=x[i].href;
+				}
+			}
+		}
+    //Get protocol
+	    if (!canonicalURL){
+	    	curProtocol = window.location.protocol.split(':')[0];
+	    }
+	    else{
+	    	curProtocol = canonicalURL.split(':')[0];
+	    }
+      //Get current URL if the canonical URL does not exist
+	    if (!canonicalURL) canonicalURL = window.location.href;
+	    //Assign script content. Replace current URL with the canonical URL
+      !function(){var e=/([http|https]:\/\/[a-zA-Z0-9\_\.]+\.baidu\.com)/gi,r=canonicalURL,t=document.referrer;if(!e.test(r)){var n=(String(curProtocol).toLowerCase() === 'https')?"https://sp0.baidu.com/9_Q4simg2RQJ8t7jm9iCKT-xh_/s.gif":"//api.share.baidu.com/s.gif";t?(n+="?r="+encodeURIComponent(document.referrer),r&&(n+="&l="+r)):r&&(n+="?l="+r);var i=new Image;i.src=n}}(window);})();
+  </script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+  
+
+</body>
+</html>
